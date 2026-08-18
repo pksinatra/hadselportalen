@@ -133,19 +133,24 @@ final class LP_Importer
 
     private static function import_dx_culture(WP_Post $source, string $url, array &$result): void
     {
-        $page_response = wp_remote_get($url, array('timeout' => 20, 'user-agent' => 'Lokalportalen/' . LP_CORE_VERSION));
-        if (is_wp_error($page_response)) {
-            $result['errors'][] = $page_response->get_error_message();
-            return;
-        }
-        $html = wp_remote_retrieve_body($page_response);
-        if (!preg_match('~src=["\']([^"\']*path---kulturprogram[^"\']+\.js)["\']~i', $html, $script_match)) {
-            $result['errors'][] = 'Fant ikke DX-kulturprogrammets datafil.';
-            return;
-        }
         $parts = wp_parse_url($url);
         $origin = ($parts['scheme'] ?? 'https') . '://' . ($parts['host'] ?? '');
-        $script_url = str_starts_with($script_match[1], 'http') ? $script_match[1] : rtrim($origin, '/') . '/' . ltrim($script_match[1], '/');
+        $script_url = '';
+        if (preg_match('~\.js(?:\?.*)?$~i', $url)) {
+            $script_url = $url;
+        } else {
+            $page_response = wp_remote_get($url, array('timeout' => 20, 'user-agent' => 'Lokalportalen/' . LP_CORE_VERSION));
+            if (is_wp_error($page_response)) {
+                $result['errors'][] = $page_response->get_error_message();
+                return;
+            }
+            $html = wp_remote_retrieve_body($page_response);
+            if (!preg_match('~src=["\']([^"\']*path---kulturprogram[^"\']+\.js)["\']~i', $html, $script_match)) {
+                $result['errors'][] = 'Fant ikke DX-kulturprogrammets datafil. Oppdater kilden med gjeldende path---kulturprogram-fil.';
+                return;
+            }
+            $script_url = str_starts_with($script_match[1], 'http') ? $script_match[1] : rtrim($origin, '/') . '/' . ltrim($script_match[1], '/');
+        }
         $script_response = wp_remote_get($script_url, array('timeout' => 20, 'user-agent' => 'Lokalportalen/' . LP_CORE_VERSION));
         if (is_wp_error($script_response)) {
             $result['errors'][] = $script_response->get_error_message();
