@@ -21,6 +21,7 @@ Eksisterende WordPress-innhold og pluginen `hadsel-rss` endres ikke av denne kod
 
 ```text
 docs/                                      Arkitektur og driftsrutiner
+legacy/                                    Uendrede snapshots fra produksjon
 wp-content/plugins/lokalportalen-core/     Gjenbrukbar portalplugin
 tests/                                     Enkle kildekontroller
 ```
@@ -34,3 +35,4 @@ php tests/source-contract.php
 
 Se [docs/operations.md](docs/operations.md) før første installasjon eller oppdatering i staging/produksjon.
 
+Produksjonsversjonen av `HadselPortalen RSS 0.2.0` er arkivert uendret i `legacy/hadsel-rss-0.2.0/`.

@@ -12,13 +12,15 @@ Kartlagt 18. august 2026 uten endringer:
 - sju tilgjengelige oppdateringer
 - ingen feeder konfigurert i HadselPortalen RSS
 
+Produksjonskoden for `HadselPortalen RSS 0.2.0` ble hentet skrivebeskyttet og arkivert uendret under `legacy/hadsel-rss-0.2.0/` 18. august 2026.
+
 Elementor har et stort versjonssprang tilgjengelig. Oppdatering av WordPress, Elementor, tema eller andre plugins er ikke del av første utrulling.
 
 ## Før staging
 
 1. Skaff SFTP/SSH eller et separat FTP-passord for automatisert utrulling. Ikke legg legitimasjon i repoet.
 2. Last ned hele `wp-content` og databaseeksport til en datert, kryptert sikkerhetskopi.
-3. Arkiver produksjonsversjonen av `wp-content/plugins/hadsel-rss/` i repoets `legacy/`-gren eller som et release-vedlegg.
+3. Kontroller at snapshotet av `wp-content/plugins/hadsel-rss/` under `legacy/` fortsatt samsvarer med produksjon.
 4. Opprett staging på egen database og URL.
 5. Bekreft at e-post, skjemaer og søkemotorindeksering er deaktivert på staging.
 
@@ -60,4 +62,3 @@ Anbefalt intervall er hvert 15. minutt. Pluginens egen importjobb kjører timevi
 5. Eksisterende `hadsel-rss`, sider og Elementor-innhold påvirkes ikke og kan fortsette som før.
 
 Produksjonsutrulling skal bruke en versjonert zip/release og en eksplisitt filliste. Aldri synkroniser hele en lokal WordPress-installasjon over produksjonen.
-
