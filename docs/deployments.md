@@ -15,3 +15,14 @@
 
 Den eldre `HadselPortalen RSS 0.2.0` forble aktiv og uendret.
 
+## 2026-08-18 – Lokalportalen Core 0.2.0
+
+- La til maksimum antall elementer, aldersgrense og inkluder-/ekskluderfiltre per kilde.
+- La til kilde- og originallenker i redaksjonell innholdsliste.
+- Forbedret importresultat med egne tall for duplikater, filtrerte elementer og feil.
+- La til redaktørbeskyttet forhåndsvisning av kladder.
+- La til responsivt kortdesign for Aktuelt og Arrangementer.
+- Konfigurerte Hadsel kommune med 20 elementer per import og 30 dagers aldersgrense.
+- Produksjonstest: 0 nye, 10 duplikater, 0 filtrert, 0 feil.
+- Skjult portalside viste seks kladdekort med kilde og lenke til originalen.
+- Offentlig forside og eldre RSS-plugin forble uendret.
