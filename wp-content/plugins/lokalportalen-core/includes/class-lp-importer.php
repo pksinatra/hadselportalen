@@ -62,6 +62,14 @@ final class LP_Importer
             return $result;
         }
 
+        if (get_post_meta($source_id, '_lp_source_type', true) === 'dx_culture') {
+            self::import_dx_culture($source, $url, $result);
+            update_post_meta($source_id, '_lp_last_import_at', current_time('mysql', true));
+            update_post_meta($source_id, '_lp_last_import_summary', wp_json_encode($result));
+            self::log($result);
+            return $result;
+        }
+
         require_once ABSPATH . WPINC . '/feed.php';
         $feed = fetch_feed($url);
         if (is_wp_error($feed)) {
@@ -88,7 +96,7 @@ final class LP_Importer
                 continue;
             }
             $external_id = sanitize_text_field((string) ($item->get_id() ?: hash('sha256', $permalink)));
-            if (self::exists($external_id, $permalink)) {
+            if (self::exists('lp_current', $external_id, $permalink)) {
                 $result['skipped']++;
                 continue;
             }
@@ -123,6 +131,83 @@ final class LP_Importer
         return $result;
     }
 
+    private static function import_dx_culture(WP_Post $source, string $url, array &$result): void
+    {
+        $page_response = wp_remote_get($url, array('timeout' => 20, 'user-agent' => 'Lokalportalen/' . LP_CORE_VERSION));
+        if (is_wp_error($page_response)) {
+            $result['errors'][] = $page_response->get_error_message();
+            return;
+        }
+        $html = wp_remote_retrieve_body($page_response);
+        if (!preg_match('~src=["\']([^"\']*path---kulturprogram[^"\']+\.js)["\']~i', $html, $script_match)) {
+            $result['errors'][] = 'Fant ikke DX-kulturprogrammets datafil.';
+            return;
+        }
+        $parts = wp_parse_url($url);
+        $origin = ($parts['scheme'] ?? 'https') . '://' . ($parts['host'] ?? '');
+        $script_url = str_starts_with($script_match[1], 'http') ? $script_match[1] : rtrim($origin, '/') . '/' . ltrim($script_match[1], '/');
+        $script_response = wp_remote_get($script_url, array('timeout' => 20, 'user-agent' => 'Lokalportalen/' . LP_CORE_VERSION));
+        if (is_wp_error($script_response)) {
+            $result['errors'][] = $script_response->get_error_message();
+            return;
+        }
+        $javascript = wp_remote_retrieve_body($script_response);
+        $pattern = '~\{id:"([^"]+_culture_culture)",title:"((?:\\\\.|[^"])*)",image:"((?:\\\\.|[^"])*)",description:(?:null|"((?:\\\\.|[^"])*)"),link:"([^"]+)",category:"([^"]*)",begin:"([^"]+)".*?tickets:\[\{.*?date:"([^"]+)".*?location:"([^"]*)".*?link:"([^"]*)"~s';
+        if (!preg_match_all($pattern, $javascript, $matches, PREG_SET_ORDER)) {
+            $result['errors'][] = 'DX-datafilen inneholdt ingen gjenkjennelige arrangementer.';
+            return;
+        }
+
+        $status = get_post_meta($source->ID, '_lp_publish_mode', true) === 'publish' ? 'publish' : 'draft';
+        $max_items = max(1, (int) (get_post_meta($source->ID, '_lp_max_items', true) ?: 30));
+        foreach (array_slice($matches, 0, $max_items) as $match) {
+            $external_id = sanitize_text_field($match[1]);
+            $title = sanitize_text_field(stripcslashes($match[2]));
+            $image = esc_url_raw(stripcslashes($match[3]));
+            $description = sanitize_text_field(stripcslashes($match[4] ?? ''));
+            $detail_url = esc_url_raw(rtrim($origin, '/') . '/' . ltrim($match[5], '/'));
+            $category = sanitize_text_field($match[6]);
+            $start = sanitize_text_field($match[8] ?: $match[7]);
+            $venue = sanitize_text_field(stripcslashes($match[9]));
+            $booking_url = esc_url_raw(stripcslashes($match[10]));
+            if (strtotime($start) < current_time('timestamp')) {
+                $result['filtered']++;
+                continue;
+            }
+            if (self::exists('lp_event', $external_id, $detail_url)) {
+                $result['skipped']++;
+                continue;
+            }
+            $post_id = wp_insert_post(array(
+                'post_type' => 'lp_event',
+                'post_status' => $status,
+                'post_title' => $title ?: 'Arrangement uten tittel',
+                'post_excerpt' => $description ?: $category,
+                'post_content' => $description,
+                'meta_input' => array(
+                    '_lp_source_id' => $source->ID,
+                    '_lp_source_name' => $source->post_title,
+                    '_lp_source_url' => $detail_url,
+                    '_lp_external_id' => $external_id,
+                    '_lp_start_at' => str_replace(' ', 'T', $start),
+                    '_lp_end_at' => str_replace(' ', 'T', $start),
+                    '_lp_venue' => $venue,
+                    '_lp_booking_url' => $booking_url,
+                    '_lp_image_url' => $image,
+                    '_lp_imported_at' => current_time('mysql', true),
+                ),
+            ), true);
+            if (is_wp_error($post_id)) {
+                $result['errors'][] = $post_id->get_error_message();
+            } else {
+                if ($category !== '') {
+                    wp_set_object_terms($post_id, array($category), 'lp_category', true);
+                }
+                $result['created']++;
+            }
+        }
+    }
+
     private static function keywords(string $csv): array
     {
         $items = array_map('trim', explode(',', mb_strtolower($csv)));
@@ -152,7 +237,7 @@ final class LP_Importer
         return $max_age_days === 0 || $timestamp === 0 || $timestamp >= time() - ($max_age_days * DAY_IN_SECONDS);
     }
 
-    private static function exists(string $external_id, string $url): bool
+    private static function exists(string $post_type, string $external_id, string $url): bool
     {
         $meta_query = array('relation' => 'OR');
         if ($external_id !== '') {
@@ -166,7 +251,7 @@ final class LP_Importer
         }
 
         $query = new WP_Query(array(
-            'post_type' => 'lp_current',
+            'post_type' => $post_type,
             'post_status' => 'any',
             'posts_per_page' => 1,
             'fields' => 'ids',

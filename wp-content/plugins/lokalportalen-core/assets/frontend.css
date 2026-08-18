@@ -9,10 +9,15 @@
 }
 
 .lp-current-list,
-.lp-event-list {
+.lp-event-list,
+.lp-directory-list {
   display: grid;
   gap: 1rem;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+}
+
+.lp-directory-list .lp-card {
+  border-top: 4px solid #e9a23b;
 }
 
 .lp-card {
@@ -24,6 +29,20 @@
   flex-direction: column;
   min-height: 100%;
   padding: clamp(1rem, 2vw, 1.4rem);
+}
+
+.lp-card__image {
+  border-radius: 10px;
+  display: block;
+  margin: -0.4rem -0.4rem .9rem;
+  overflow: hidden;
+}
+
+.lp-card__image img {
+  aspect-ratio: 16 / 9;
+  display: block;
+  object-fit: cover;
+  width: 100%;
 }
 
 .lp-card h3 {

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Lokalportalen Core
  * Description: Strukturert innhold og kildebasert import for lokale informasjonsportaler.
- * Version: 0.2.0
+ * Version: 0.3.0
  * Author: HadselPortalen
  * Text Domain: lokalportalen
  * Requires at least: 6.6
@@ -15,7 +15,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('LP_CORE_VERSION', '0.2.0');
+define('LP_CORE_VERSION', '0.3.0');
 define('LP_CORE_FILE', __FILE__);
 define('LP_CORE_DIR', plugin_dir_path(__FILE__));
 

@@ -22,6 +22,12 @@ final class LP_Meta_Boxes
         '_lp_max_age_days' => array('Maks alder i dager', 'number'),
         '_lp_include_keywords' => array('Inkluder nøkkelord', 'text'),
         '_lp_exclude_keywords' => array('Ekskluder nøkkelord', 'text'),
+        '_lp_address' => array('Adresse', 'text'),
+        '_lp_phone' => array('Telefon', 'tel'),
+        '_lp_email' => array('E-post', 'email'),
+        '_lp_opening_hours' => array('Åpningstider', 'text'),
+        '_lp_booking_url' => array('Bestilling/billett-URL', 'url'),
+        '_lp_venue' => array('Arrangementssted', 'text'),
     );
 
     public static function register_hooks(): void
@@ -33,7 +39,7 @@ final class LP_Meta_Boxes
 
     public static function register_meta(): void
     {
-        foreach (array('lp_source', 'lp_place', 'lp_current', 'lp_event') as $post_type) {
+        foreach (array('lp_source', 'lp_place', 'lp_current', 'lp_event', 'lp_business', 'lp_experience', 'lp_organization') as $post_type) {
             foreach (array_keys(self::FIELDS) as $key) {
                 register_post_meta($post_type, $key, array(
                     'type' => 'string',
@@ -48,15 +54,18 @@ final class LP_Meta_Boxes
 
     public static function sanitize_meta($value, string $key = ''): string
     {
-        if (in_array($key, array('_lp_source_url', '_lp_website'), true)) {
+        if (in_array($key, array('_lp_source_url', '_lp_website', '_lp_booking_url'), true)) {
             return esc_url_raw((string) $value);
+        }
+        if ($key === '_lp_email') {
+            return sanitize_email((string) $value);
         }
         return sanitize_text_field((string) $value);
     }
 
     public static function add_boxes(): void
     {
-        foreach (array('lp_place', 'lp_current', 'lp_event') as $post_type) {
+        foreach (array('lp_place', 'lp_current', 'lp_event', 'lp_business', 'lp_experience', 'lp_organization') as $post_type) {
             add_meta_box('lp_details', 'Portaldata', array(__CLASS__, 'render_details'), $post_type, 'normal', 'default');
         }
 
@@ -68,7 +77,10 @@ final class LP_Meta_Boxes
         wp_nonce_field('lp_save_meta', 'lp_meta_nonce');
         $allowed = array('_lp_source_url', '_lp_website', '_lp_external_id', '_lp_checked_at', '_lp_latitude', '_lp_longitude');
         if ($post->post_type === 'lp_event') {
-            $allowed = array_merge($allowed, array('_lp_start_at', '_lp_end_at', '_lp_expires_at'));
+            $allowed = array_merge($allowed, array('_lp_start_at', '_lp_end_at', '_lp_expires_at', '_lp_venue', '_lp_booking_url'));
+        }
+        if (in_array($post->post_type, array('lp_business', 'lp_experience', 'lp_organization'), true)) {
+            $allowed = array_merge($allowed, array('_lp_address', '_lp_phone', '_lp_email', '_lp_opening_hours', '_lp_booking_url'));
         }
         self::render_fields($post, $allowed);
     }
@@ -79,8 +91,15 @@ final class LP_Meta_Boxes
         self::render_fields($post, array('_lp_source_url', '_lp_website', '_lp_max_items', '_lp_max_age_days', '_lp_include_keywords', '_lp_exclude_keywords'));
         echo '<p class="description">Nøkkelord skilles med komma. Tom inkluderingsliste slipper gjennom alt.</p>';
         $mode = get_post_meta($post->ID, '_lp_publish_mode', true) ?: 'draft';
+        $source_type = get_post_meta($post->ID, '_lp_source_type', true) ?: 'rss';
         $active = get_post_meta($post->ID, '_lp_source_active', true);
         ?>
+        <p><label for="lp_source_type"><strong>Kildetype</strong></label><br>
+            <select id="lp_source_type" name="lp_meta[_lp_source_type]">
+                <option value="rss" <?php selected($source_type, 'rss'); ?>>RSS/Atom – Aktuelt</option>
+                <option value="dx_culture" <?php selected($source_type, 'dx_culture'); ?>>DX kulturprogram – Arrangementer</option>
+            </select>
+        </p>
         <p><label for="lp_publish_mode"><strong>Publiseringsmodus</strong></label><br>
             <select id="lp_publish_mode" name="lp_meta[_lp_publish_mode]">
                 <option value="draft" <?php selected($mode, 'draft'); ?>>Til godkjenning (kladd)</option>
@@ -115,7 +134,7 @@ final class LP_Meta_Boxes
         if (!current_user_can('edit_post', $post_id)) {
             return;
         }
-        $supported = array('lp_source', 'lp_place', 'lp_current', 'lp_event');
+        $supported = array('lp_source', 'lp_place', 'lp_current', 'lp_event', 'lp_business', 'lp_experience', 'lp_organization');
         if (!in_array($post->post_type, $supported, true)) {
             return;
         }
@@ -129,6 +148,8 @@ final class LP_Meta_Boxes
         if ($post->post_type === 'lp_source') {
             $mode = isset($incoming['_lp_publish_mode']) && $incoming['_lp_publish_mode'] === 'publish' ? 'publish' : 'draft';
             update_post_meta($post_id, '_lp_publish_mode', $mode);
+            $source_type = isset($incoming['_lp_source_type']) && $incoming['_lp_source_type'] === 'dx_culture' ? 'dx_culture' : 'rss';
+            update_post_meta($post_id, '_lp_source_type', $source_type);
             update_post_meta($post_id, '_lp_source_active', isset($incoming['_lp_source_active']) ? '1' : '0');
             update_post_meta($post_id, '_lp_max_items', (string) min(100, max(1, absint($incoming['_lp_max_items'] ?? 20))));
             update_post_meta($post_id, '_lp_max_age_days', (string) min(365, max(0, absint($incoming['_lp_max_age_days'] ?? 30))));
