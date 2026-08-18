@@ -23,10 +23,11 @@ final class LP_Shortcodes
 
     public static function current_items(array $atts = array()): string
     {
-        $atts = shortcode_atts(array('antall' => 8), $atts, 'lokalportalen_aktuelt');
+        $atts = shortcode_atts(array('antall' => 8, 'kladder' => '0'), $atts, 'lokalportalen_aktuelt');
+        $post_status = $atts['kladder'] === '1' && current_user_can('edit_posts') ? array('publish', 'draft') : 'publish';
         return self::render_query(new WP_Query(array(
             'post_type' => 'lp_current',
-            'post_status' => 'publish',
+            'post_status' => $post_status,
             'posts_per_page' => min(30, max(1, absint($atts['antall']))),
             'no_found_rows' => true,
         )), 'lp-current-list');
@@ -54,7 +55,8 @@ final class LP_Shortcodes
 
     public static function portal(array $atts = array()): string
     {
-        return '<section class="lokalportalen-overview"><div><h2>Aktuelt</h2>' . self::current_items(array('antall' => 6)) . '</div><div><h2>Arrangementer</h2>' . self::events(array('antall' => 6)) . '</div></section>';
+        $atts = shortcode_atts(array('kladder' => '0'), $atts, 'lokalportalen_forside');
+        return '<section class="lokalportalen-overview"><div><h2>Aktuelt</h2>' . self::current_items(array('antall' => 6, 'kladder' => $atts['kladder'])) . '</div><div><h2>Arrangementer</h2>' . self::events(array('antall' => 6)) . '</div></section>';
     }
 
     private static function render_query(WP_Query $query, string $class): string
