@@ -52,7 +52,7 @@ final class LP_Importer
 
     public static function import_source(int $source_id): array
     {
-        $result = array('source_id' => $source_id, 'created' => 0, 'skipped' => 0, 'errors' => array());
+        $result = array('source_id' => $source_id, 'created' => 0, 'skipped' => 0, 'filtered' => 0, 'errors' => array());
         $source = get_post($source_id);
         $url = esc_url_raw((string) get_post_meta($source_id, '_lp_source_url', true));
 
@@ -70,20 +70,29 @@ final class LP_Importer
             return $result;
         }
 
-        $max_items = (int) apply_filters('lp_import_max_items', 20, $source_id);
+        $configured_max = (int) get_post_meta($source_id, '_lp_max_items', true);
+        $max_items = (int) apply_filters('lp_import_max_items', $configured_max > 0 ? $configured_max : 20, $source_id);
         $items = $feed->get_items(0, $feed->get_item_quantity($max_items));
         $status = get_post_meta($source_id, '_lp_publish_mode', true) === 'publish' ? 'publish' : 'draft';
+        $max_age_days = max(0, (int) get_post_meta($source_id, '_lp_max_age_days', true));
+        $include = self::keywords((string) get_post_meta($source_id, '_lp_include_keywords', true));
+        $exclude = self::keywords((string) get_post_meta($source_id, '_lp_exclude_keywords', true));
 
         foreach ($items as $item) {
             $permalink = esc_url_raw((string) $item->get_permalink());
+            $title = sanitize_text_field(wp_strip_all_tags((string) $item->get_title()));
+            $description = wp_trim_words(wp_strip_all_tags((string) ($item->get_description() ?: $item->get_content())), 45, '…');
+            $timestamp = (int) ($item->get_date('U') ?: 0);
+            if (!self::passes_filters($title . ' ' . $description, $timestamp, $include, $exclude, $max_age_days)) {
+                $result['filtered']++;
+                continue;
+            }
             $external_id = sanitize_text_field((string) ($item->get_id() ?: hash('sha256', $permalink)));
             if (self::exists($external_id, $permalink)) {
                 $result['skipped']++;
                 continue;
             }
 
-            $title = sanitize_text_field(wp_strip_all_tags((string) $item->get_title()));
-            $description = wp_trim_words(wp_strip_all_tags((string) $item->get_description()), 45, '…');
             $date = $item->get_date('Y-m-d H:i:s');
             $post_id = wp_insert_post(array(
                 'post_type' => 'lp_current',
@@ -112,6 +121,35 @@ final class LP_Importer
         update_post_meta($source_id, '_lp_last_import_summary', wp_json_encode($result));
         self::log($result);
         return $result;
+    }
+
+    private static function keywords(string $csv): array
+    {
+        $items = array_map('trim', explode(',', mb_strtolower($csv)));
+        return array_values(array_unique(array_filter($items, static fn(string $item): bool => $item !== '')));
+    }
+
+    private static function passes_filters(string $text, int $timestamp, array $include, array $exclude, int $max_age_days): bool
+    {
+        $haystack = mb_strtolower($text);
+        foreach ($exclude as $word) {
+            if (str_contains($haystack, $word)) {
+                return false;
+            }
+        }
+        if ($include) {
+            $matched = false;
+            foreach ($include as $word) {
+                if (str_contains($haystack, $word)) {
+                    $matched = true;
+                    break;
+                }
+            }
+            if (!$matched) {
+                return false;
+            }
+        }
+        return $max_age_days === 0 || $timestamp === 0 || $timestamp >= time() - ($max_age_days * DAY_IN_SECONDS);
     }
 
     private static function exists(string $external_id, string $url): bool
@@ -149,4 +187,3 @@ final class LP_Importer
         ));
     }
 }
-

@@ -1,0 +1,62 @@
+.lokalportalen-overview {
+  display: grid;
+  gap: clamp(2rem, 4vw, 4rem);
+}
+
+.lokalportalen-overview > div > h2 {
+  font-size: clamp(1.65rem, 3vw, 2.4rem);
+  margin: 0 0 1rem;
+}
+
+.lp-current-list,
+.lp-event-list {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+}
+
+.lp-card {
+  background: #fff;
+  border: 1px solid rgba(12, 42, 54, .12);
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(12, 42, 54, .07);
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: clamp(1rem, 2vw, 1.4rem);
+}
+
+.lp-card h3 {
+  font-size: 1.2rem;
+  line-height: 1.25;
+  margin: .55rem 0 .75rem;
+}
+
+.lp-card h3 a {
+  color: #0c2a36;
+  text-decoration: none;
+}
+
+.lp-card__meta {
+  color: #52666e;
+  display: flex;
+  flex-wrap: wrap;
+  font-size: .78rem;
+  font-weight: 600;
+  gap: .35rem .75rem;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+}
+
+.lp-card__source {
+  color: #075c74;
+  font-weight: 700;
+  margin-top: auto;
+  padding-top: .65rem;
+  text-decoration: none;
+}
+
+.lp-card__source:hover,
+.lp-card h3 a:hover {
+  text-decoration: underline;
+}

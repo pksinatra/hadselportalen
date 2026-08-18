@@ -18,6 +18,10 @@ final class LP_Meta_Boxes
         '_lp_latitude' => array('Breddegrad', 'number'),
         '_lp_longitude' => array('Lengdegrad', 'number'),
         '_lp_checked_at' => array('Sist kontrollert', 'datetime-local'),
+        '_lp_max_items' => array('Maks elementer per import', 'number'),
+        '_lp_max_age_days' => array('Maks alder i dager', 'number'),
+        '_lp_include_keywords' => array('Inkluder nøkkelord', 'text'),
+        '_lp_exclude_keywords' => array('Ekskluder nøkkelord', 'text'),
     );
 
     public static function register_hooks(): void
@@ -72,7 +76,8 @@ final class LP_Meta_Boxes
     public static function render_source(WP_Post $post): void
     {
         wp_nonce_field('lp_save_meta', 'lp_meta_nonce');
-        self::render_fields($post, array('_lp_source_url', '_lp_website'));
+        self::render_fields($post, array('_lp_source_url', '_lp_website', '_lp_max_items', '_lp_max_age_days', '_lp_include_keywords', '_lp_exclude_keywords'));
+        echo '<p class="description">Nøkkelord skilles med komma. Tom inkluderingsliste slipper gjennom alt.</p>';
         $mode = get_post_meta($post->ID, '_lp_publish_mode', true) ?: 'draft';
         $active = get_post_meta($post->ID, '_lp_source_active', true);
         ?>
@@ -125,7 +130,8 @@ final class LP_Meta_Boxes
             $mode = isset($incoming['_lp_publish_mode']) && $incoming['_lp_publish_mode'] === 'publish' ? 'publish' : 'draft';
             update_post_meta($post_id, '_lp_publish_mode', $mode);
             update_post_meta($post_id, '_lp_source_active', isset($incoming['_lp_source_active']) ? '1' : '0');
+            update_post_meta($post_id, '_lp_max_items', (string) min(100, max(1, absint($incoming['_lp_max_items'] ?? 20))));
+            update_post_meta($post_id, '_lp_max_age_days', (string) min(365, max(0, absint($incoming['_lp_max_age_days'] ?? 30))));
         }
     }
 }
-
