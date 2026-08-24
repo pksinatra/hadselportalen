@@ -47,3 +47,12 @@ Den eldre `HadselPortalen RSS 0.2.0` forble aktiv og uendret.
 - Modulen er en lenkesamling og henter ikke innlegg, medlemsdata eller andre personopplysninger fra Facebook.
 - Verifiserte begge gruppelenkene, personvernmerkingen og forklaringsteksten i den skjulte portaltesten.
 - Kontrollerte at VisitStokmarknes fortsatt bruker `.com`, og at offentlig forside er uendret.
+
+## 2026-08-24 – innholdsoppdatering: Næringslivet i Hadsel
+
+- Omskrev den offentlige siden `/naeringslivet-i-hadsel` med etterprøvbare eksempler og mindre generell reklamespråk.
+- Løftet fram Nordlaks og industrimiljøet på Børøya, Skretting, leverandørnæringene og Melbu som næringssted.
+- Oppdaterte omtalen av handel og tjenester, offentlig sektor, reiseliv, kultur, lokalmat, transport og framtidige muligheter.
+- Fjernet en udokumentert påstand om SSB-prognoser og stabil vekst.
+- La inn originallenker til Nordlaks, Skretting, Hurtigrutemuseet og VisitStokmarknes Explore (`.com`).
+- Kontrollerte den publiserte siden etter oppdatering. Forrige tekst er tilgjengelig i WordPress-revisjonene.
