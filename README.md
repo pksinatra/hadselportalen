@@ -33,13 +33,15 @@ find wp-content/plugins/lokalportalen-core -name '*.php' -print0 | xargs -0 -n1 
 php tests/source-contract.php
 ```
 
-Se [docs/operations.md](docs/operations.md) før installasjon eller oppdatering og [docs/deployments.md](docs/deployments.md) for utrullingshistorikk.
+Se [docs/operations.md](docs/operations.md) før installasjon eller oppdatering, [docs/deployments.md](docs/deployments.md) for utrullingshistorikk og [docs/roadmap.md](docs/roadmap.md) for videre utviklingsrekkefølge.
 
 Produksjonsversjonen av `HadselPortalen RSS 0.2.0` er arkivert uendret i `legacy/hadsel-rss-0.2.0/`.
 
 ## Shortcodes
 
-- `[lokalportalen_forside]` viser praktiske meldinger, aktuelt, arrangementer og katalog.
+- `[lokalportalen_forside]` viser praktiske meldinger, aktuelt, arrangementer, VisitStokmarknes-promo og katalog. Promoen kan skjules med `promo="0"` eller tilpasses med `promo_tittel`, `promo_tekst`, `promo_url` og `promo_lenketekst`.
 - `[lokalportalen_meldinger]` viser aktive praktiske meldinger; meldinger med passert utløpsdato skjules automatisk.
 - `[lokalportalen_aktuelt]`, `[lokalportalen_arrangementer]` og `[lokalportalen_finn]` viser hver sin innholdstype.
+- `[lokalportalen_finn filtre="1"]` gir søk og filtre for type, sted og kategori.
+- `[lokalportalen_promo tittel="Opplev Stokmarknes" tekst="En liten guide til byen." url="https://visitstokmarknes.com/" lenketekst="Besøk VisitStokmarknes"]` lager en kompakt promoflate uten å låse kjernen til én portal.
 - `antall` begrenser resultatet. `kladder="1"` inkluderer kladder bare for innloggede brukere som kan redigere innlegg.

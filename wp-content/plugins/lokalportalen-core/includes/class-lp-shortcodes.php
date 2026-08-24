@@ -15,6 +15,7 @@ final class LP_Shortcodes
         add_shortcode('lokalportalen_meldinger', array(__CLASS__, 'notices'));
         add_shortcode('lokalportalen_forside', array(__CLASS__, 'portal'));
         add_shortcode('lokalportalen_finn', array(__CLASS__, 'directory'));
+        add_shortcode('lokalportalen_promo', array(__CLASS__, 'promo'));
         add_action('wp_enqueue_scripts', array(__CLASS__, 'register_styles'));
     }
 
@@ -58,8 +59,21 @@ final class LP_Shortcodes
 
     public static function portal(array $atts = array()): string
     {
-        $atts = shortcode_atts(array('kladder' => '0'), $atts, 'lokalportalen_forside');
-        return '<section class="lokalportalen-overview"><div><h2>Praktiske meldinger</h2>' . self::notices(array('antall' => 6, 'kladder' => $atts['kladder'])) . '</div><div><h2>Aktuelt</h2>' . self::current_items(array('antall' => 6, 'kladder' => $atts['kladder'])) . '</div><div><h2>Arrangementer</h2>' . self::events(array('antall' => 6, 'kladder' => $atts['kladder'])) . '</div><div><h2>Finn i Hadsel</h2>' . self::directory(array('antall' => 9, 'kladder' => $atts['kladder'])) . '</div></section>';
+        $atts = shortcode_atts(array(
+            'kladder' => '0',
+            'promo' => '1',
+            'promo_tittel' => 'Opplev Stokmarknes',
+            'promo_tekst' => 'Oppdag byen, Hurtigrutehistorien og sentrum med VisitStokmarknes.',
+            'promo_url' => 'https://visitstokmarknes.com/',
+            'promo_lenketekst' => 'Besøk VisitStokmarknes',
+        ), $atts, 'lokalportalen_forside');
+        $promo = $atts['promo'] === '1' ? self::promo(array(
+            'tittel' => $atts['promo_tittel'],
+            'tekst' => $atts['promo_tekst'],
+            'url' => $atts['promo_url'],
+            'lenketekst' => $atts['promo_lenketekst'],
+        )) : '';
+        return '<section class="lokalportalen-overview"><div><h2>Praktiske meldinger</h2>' . self::notices(array('antall' => 6, 'kladder' => $atts['kladder'])) . '</div><div><h2>Aktuelt</h2>' . self::current_items(array('antall' => 6, 'kladder' => $atts['kladder'])) . '</div><div><h2>Arrangementer</h2>' . self::events(array('antall' => 6, 'kladder' => $atts['kladder'])) . '</div>' . $promo . '<div><h2>Finn i Hadsel</h2>' . self::directory(array('antall' => 9, 'kladder' => $atts['kladder'])) . '</div></section>';
     }
 
     public static function notices(array $atts = array()): string
@@ -85,20 +99,105 @@ final class LP_Shortcodes
 
     public static function directory(array $atts = array()): string
     {
-        $atts = shortcode_atts(array('antall' => 12, 'type' => '', 'kladder' => '0'), $atts, 'lokalportalen_finn');
-        $types = array('lp_business', 'lp_experience', 'lp_organization');
+        $atts = shortcode_atts(array('antall' => 12, 'type' => '', 'kladder' => '0', 'filtre' => '1'), $atts, 'lokalportalen_finn');
+        $type_labels = array(
+            'lp_business' => 'Virksomheter',
+            'lp_experience' => 'Opplevelser',
+            'lp_organization' => 'Lag og foreninger',
+        );
+        $types = array_keys($type_labels);
         if ($atts['type'] && in_array($atts['type'], $types, true)) {
             $types = array($atts['type']);
         }
+        $selected_type = isset($_GET['lp_type']) ? sanitize_key(wp_unslash($_GET['lp_type'])) : '';
+        if ($atts['type'] === '' && isset($type_labels[$selected_type])) {
+            $types = array($selected_type);
+        }
+        $selected_location = isset($_GET['lp_location']) ? absint($_GET['lp_location']) : 0;
+        $selected_category = isset($_GET['lp_category']) ? absint($_GET['lp_category']) : 0;
+        $search = isset($_GET['lp_q']) ? sanitize_text_field(wp_unslash($_GET['lp_q'])) : '';
+        $tax_query = array('relation' => 'AND');
+        if ($selected_location > 0) {
+            $tax_query[] = array('taxonomy' => 'lp_location', 'field' => 'term_id', 'terms' => array($selected_location));
+        }
+        if ($selected_category > 0) {
+            $tax_query[] = array('taxonomy' => 'lp_category', 'field' => 'term_id', 'terms' => array($selected_category));
+        }
         $post_status = $atts['kladder'] === '1' && current_user_can('edit_posts') ? array('publish', 'draft') : 'publish';
-        return self::render_query(new WP_Query(array(
+        $query_args = array(
             'post_type' => $types,
             'post_status' => $post_status,
             'posts_per_page' => min(60, max(1, absint($atts['antall']))),
             'orderby' => 'title',
             'order' => 'ASC',
             'no_found_rows' => true,
-        )), 'lp-directory-list');
+        );
+        if ($search !== '') {
+            $query_args['s'] = $search;
+        }
+        if (count($tax_query) > 1) {
+            $query_args['tax_query'] = $tax_query;
+        }
+        $filters = $atts['filtre'] === '1' ? self::directory_filters($type_labels, $selected_type, $selected_location, $selected_category, $search, $atts['type'] === '') : '';
+        return $filters . self::render_query(new WP_Query($query_args), 'lp-directory-list');
+    }
+
+    public static function promo(array $atts = array()): string
+    {
+        $atts = shortcode_atts(array(
+            'tittel' => '',
+            'tekst' => '',
+            'url' => '',
+            'lenketekst' => 'Les mer',
+        ), $atts, 'lokalportalen_promo');
+        $url = esc_url((string) $atts['url']);
+        if ($url === '' || trim((string) $atts['tittel']) === '') {
+            return '';
+        }
+        wp_enqueue_style('lokalportalen-core');
+        return sprintf(
+            '<aside class="lp-promo" aria-label="Anbefalt"><div><span class="lp-promo__label">Tips</span><h2>%s</h2><p>%s</p></div><a class="lp-promo__link" href="%s" rel="noopener noreferrer">%s <span aria-hidden="true">→</span></a></aside>',
+            esc_html((string) $atts['tittel']),
+            esc_html((string) $atts['tekst']),
+            $url,
+            esc_html((string) $atts['lenketekst'])
+        );
+    }
+
+    private static function directory_filters(array $type_labels, string $selected_type, int $selected_location, int $selected_category, string $search, bool $show_type): string
+    {
+        $locations = get_terms(array('taxonomy' => 'lp_location', 'hide_empty' => true));
+        $categories = get_terms(array('taxonomy' => 'lp_category', 'hide_empty' => true));
+        if (is_wp_error($locations)) {
+            $locations = array();
+        }
+        if (is_wp_error($categories)) {
+            $categories = array();
+        }
+        ob_start();
+        echo '<form class="lp-directory-filters" method="get" action="' . esc_url((string) get_permalink()) . '">';
+        echo '<div><label for="lp-q">Søk</label><input id="lp-q" name="lp_q" type="search" value="' . esc_attr($search) . '" placeholder="Navn eller nøkkelord"></div>';
+        if ($show_type) {
+            echo '<div><label for="lp-type">Type</label><select id="lp-type" name="lp_type"><option value="">Alle typer</option>';
+            foreach ($type_labels as $value => $label) {
+                echo '<option value="' . esc_attr($value) . '"' . selected($selected_type, $value, false) . '>' . esc_html($label) . '</option>';
+            }
+            echo '</select></div>';
+        }
+        self::term_select('lp-location', 'lp_location', 'Sted', 'Alle steder', $locations, $selected_location);
+        self::term_select('lp-category', 'lp_category', 'Kategori', 'Alle kategorier', $categories, $selected_category);
+        echo '<div class="lp-directory-filters__actions"><button type="submit">Finn</button><a href="' . esc_url((string) get_permalink()) . '">Nullstill</a></div>';
+        echo '</form>';
+        return (string) ob_get_clean();
+    }
+
+    private static function term_select(string $id, string $name, string $label, string $empty_label, array $terms, int $selected_term): void
+    {
+        echo '<div><label for="' . esc_attr($id) . '">' . esc_html($label) . '</label><select id="' . esc_attr($id) . '" name="' . esc_attr($name) . '"><option value="">' . esc_html($empty_label) . '</option>';
+        foreach ($terms as $term) {
+            echo '<option value="' . (int) $term->term_id . '"' . selected($selected_term, (int) $term->term_id, false) . '>' . esc_html($term->name) . '</option>';
+        }
+        echo '</select></div>';
     }
 
     private static function render_query(WP_Query $query, string $class): string
