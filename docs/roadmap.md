@@ -19,6 +19,8 @@ Denne planen skiller mellom den gjenbrukbare `Lokalportalen Core` og Hadsel-spes
 
 Det første innholdsutvalget prioriterer Stokmarknes 250, Vesterålen Vinfestival og norske bearbeidinger av VisitStokmarknes Explore. Se [content-sources.md](content-sources.md).
 
+Kategoriene bygger også på menystrukturen fra HadselPortalen i 2001. Den historiske fanen `Debatt` videreføres, mens `Gjestebok` utgår. Se [historisk-meny.md](historisk-meny.md).
+
 ## Innsending og eierskap
 
 - Lage separate skjemaer for arrangement og katalogoppføring.
