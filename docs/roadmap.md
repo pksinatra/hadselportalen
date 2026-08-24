@@ -6,17 +6,16 @@ Denne planen skiller mellom den gjenbrukbare `Lokalportalen Core` og Hadsel-spes
 
 - Fase 1 – teknisk grunnplattform: fullført og satt i produksjon.
 - Fase 2 – kildekontroll og redaktørvisning: fullført og satt i produksjon.
-- Fase 3 – arrangementer og katalogmodell: delvis fullført. Hurtigrutens Hus er første arrangementskilde; katalogen mangler innhold og arbeidsflyt.
-- Fase 4 – praktiske meldinger og filtrert katalog: under utvikling lokalt.
+- Fase 3 – arrangementer og katalogmodell: fullført som skjult prototype. Hurtigrutens Hus er første arrangementskilde, og katalogen har et kvalitetssikret startutvalg i kladd.
+- Fase 4 – praktiske meldinger, filtrert katalog og jobbmodul: satt i produksjon som skjult redaktørprototype.
 
 ## Neste leveranse – portalprototype
 
-1. Publisere et lite, kvalitetssikret startutvalg av virksomheter, opplevelser og lag/foreninger.
-2. Etablere stedene Stokmarknes, Melbu, Sandnes, Hennes, Innlandet og øvrige relevante lokalsamfunn som taksonomi.
-3. Etablere et begrenset sett tydelige kategorier før dataregistrering.
-4. Teste søk og filtre for type, sted og kategori på mobil og desktop.
-5. Vise den kompakte VisitStokmarknes-promoen på portalflaten.
-6. Holde prototypen skjult for vanlige besøkende til innhold, kilder og visning er godkjent.
+1. Gjennomgå og redaksjonelt godkjenne startutvalget sammen med samarbeidspartnerne.
+2. Supplere katalogen med Melbu, øvrige lokalsamfunn og lag/foreninger.
+3. Teste søk, filtre og kortvisning grundig på fysisk mobil og desktop.
+4. Avklare bilder, kreditering og eventuell gjenbruk av flere VisitStokmarknes Explore-tekster.
+5. Holde prototypen skjult for vanlige besøkende til innhold, kilder og visning er godkjent.
 
 Det første innholdsutvalget prioriterer Stokmarknes 250, Vesterålen Vinfestival og norske bearbeidinger av VisitStokmarknes Explore. Se [content-sources.md](content-sources.md).
 
@@ -33,7 +32,7 @@ Det første innholdsutvalget prioriterer Stokmarknes 250, Vesterålen Vinfestiva
 
 - Bruke NAVs registrerte stillingsfeed som hovedkilde og filtrere geografisk til Hadsel.
 - Bruke NAV-data også når originalannonsen kommer fra FINN, fremfor å skrape FINN direkte.
-- Lage en egen Teamtailor-adapter for Hadsel-relevante Nordlaks-stillinger.
+- Teamtailor-adapteren for Hadsel-relevante Nordlaks-stillinger er satt i produksjon og importerer til kladd.
 - Koble på dokumenterte lokale karrieresider én om gangen.
 - Lagre original URL, arbeidsgiver, arbeidssted, ansettelsesform, stillingsprosent og søknadsfrist.
 - Skjule utløpte eller trukne annonser automatisk.
