@@ -28,6 +28,10 @@ final class LP_Meta_Boxes
         '_lp_opening_hours' => array('Åpningstider', 'text'),
         '_lp_booking_url' => array('Bestilling/billett-URL', 'url'),
         '_lp_venue' => array('Arrangementssted', 'text'),
+        '_lp_employer' => array('Arbeidsgiver', 'text'),
+        '_lp_application_deadline' => array('Søknadsfrist', 'date'),
+        '_lp_employment_type' => array('Ansettelsesform', 'text'),
+        '_lp_position_percentage' => array('Stillingsprosent', 'text'),
     );
 
     public static function register_hooks(): void
@@ -39,7 +43,7 @@ final class LP_Meta_Boxes
 
     public static function register_meta(): void
     {
-        foreach (array('lp_source', 'lp_place', 'lp_current', 'lp_event', 'lp_notice', 'lp_business', 'lp_experience', 'lp_organization') as $post_type) {
+        foreach (array('lp_source', 'lp_place', 'lp_current', 'lp_event', 'lp_notice', 'lp_job', 'lp_business', 'lp_experience', 'lp_organization') as $post_type) {
             foreach (array_keys(self::FIELDS) as $key) {
                 register_post_meta($post_type, $key, array(
                     'type' => 'string',
@@ -65,7 +69,7 @@ final class LP_Meta_Boxes
 
     public static function add_boxes(): void
     {
-        foreach (array('lp_place', 'lp_current', 'lp_event', 'lp_notice', 'lp_business', 'lp_experience', 'lp_organization') as $post_type) {
+        foreach (array('lp_place', 'lp_current', 'lp_event', 'lp_notice', 'lp_job', 'lp_business', 'lp_experience', 'lp_organization') as $post_type) {
             add_meta_box('lp_details', 'Portaldata', array(__CLASS__, 'render_details'), $post_type, 'normal', 'default');
         }
 
@@ -81,6 +85,9 @@ final class LP_Meta_Boxes
         }
         if ($post->post_type === 'lp_notice') {
             $allowed[] = '_lp_expires_at';
+        }
+        if ($post->post_type === 'lp_job') {
+            $allowed = array_merge($allowed, array('_lp_employer', '_lp_application_deadline', '_lp_employment_type', '_lp_position_percentage', '_lp_address'));
         }
         if (in_array($post->post_type, array('lp_business', 'lp_experience', 'lp_organization'), true)) {
             $allowed = array_merge($allowed, array('_lp_address', '_lp_phone', '_lp_email', '_lp_opening_hours', '_lp_booking_url'));
@@ -137,7 +144,7 @@ final class LP_Meta_Boxes
         if (!current_user_can('edit_post', $post_id)) {
             return;
         }
-        $supported = array('lp_source', 'lp_place', 'lp_current', 'lp_event', 'lp_notice', 'lp_business', 'lp_experience', 'lp_organization');
+        $supported = array('lp_source', 'lp_place', 'lp_current', 'lp_event', 'lp_notice', 'lp_job', 'lp_business', 'lp_experience', 'lp_organization');
         if (!in_array($post->post_type, $supported, true)) {
             return;
         }

@@ -11,10 +11,15 @@
 .lp-current-list,
 .lp-event-list,
 .lp-notice-list,
+.lp-job-list,
 .lp-directory-list {
   display: grid;
   gap: 1rem;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+}
+
+.lp-job-list .lp-card {
+  border-top: 4px solid #3f7c55;
 }
 
 .lp-notice-list .lp-card {

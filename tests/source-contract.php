@@ -21,7 +21,7 @@ foreach ($required as $file) {
 }
 
 $source = implode("\n", array_map(static fn(string $file): string => (string) file_get_contents($root . '/' . $file), array_filter($required, static fn(string $file): bool => is_file($root . '/' . $file))));
-foreach (array('lp_source', 'lp_place', 'lp_current', 'lp_event', 'lp_notice', 'lp_business', 'lp_experience', 'lp_organization', 'lp_import_log', '_lp_external_id', '_lp_source_url', '_lp_source_type', 'dx_culture', '_lp_max_age_days', '_lp_include_keywords', '_lp_expires_at', '_lp_venue', 'lp_hourly_import', 'lp_core_version', 'maybe_upgrade', 'lokalportalen-core', 'lokalportalen_finn', 'lokalportalen_meldinger', 'lokalportalen_promo', 'lp_location', 'lp_category') as $needle) {
+foreach (array('lp_source', 'lp_place', 'lp_current', 'lp_event', 'lp_notice', 'lp_job', 'lp_business', 'lp_experience', 'lp_organization', 'lp_import_log', '_lp_external_id', '_lp_source_url', '_lp_source_type', 'dx_culture', '_lp_max_age_days', '_lp_include_keywords', '_lp_expires_at', '_lp_venue', '_lp_employer', '_lp_application_deadline', 'lp_hourly_import', 'lp_core_version', 'maybe_upgrade', 'lokalportalen-core', 'lokalportalen_finn', 'lokalportalen_meldinger', 'lokalportalen_jobber', 'lokalportalen_promo', 'lp_location', 'lp_category') as $needle) {
     if (!str_contains($source, $needle)) {
         $errors[] = 'Mangler kontrakt: ' . $needle;
     }

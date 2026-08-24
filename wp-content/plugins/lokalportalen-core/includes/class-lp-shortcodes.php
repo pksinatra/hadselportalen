@@ -13,6 +13,7 @@ final class LP_Shortcodes
         add_shortcode('lokalportalen_aktuelt', array(__CLASS__, 'current_items'));
         add_shortcode('lokalportalen_arrangementer', array(__CLASS__, 'events'));
         add_shortcode('lokalportalen_meldinger', array(__CLASS__, 'notices'));
+        add_shortcode('lokalportalen_jobber', array(__CLASS__, 'jobs'));
         add_shortcode('lokalportalen_forside', array(__CLASS__, 'portal'));
         add_shortcode('lokalportalen_finn', array(__CLASS__, 'directory'));
         add_shortcode('lokalportalen_promo', array(__CLASS__, 'promo'));
@@ -73,7 +74,28 @@ final class LP_Shortcodes
             'url' => $atts['promo_url'],
             'lenketekst' => $atts['promo_lenketekst'],
         )) : '';
-        return '<section class="lokalportalen-overview"><div><h2>Praktiske meldinger</h2>' . self::notices(array('antall' => 6, 'kladder' => $atts['kladder'])) . '</div><div><h2>Aktuelt</h2>' . self::current_items(array('antall' => 6, 'kladder' => $atts['kladder'])) . '</div><div><h2>Arrangementer</h2>' . self::events(array('antall' => 6, 'kladder' => $atts['kladder'])) . '</div>' . $promo . '<div><h2>Finn i Hadsel</h2>' . self::directory(array('antall' => 9, 'kladder' => $atts['kladder'])) . '</div></section>';
+        return '<section class="lokalportalen-overview"><div><h2>Praktiske meldinger</h2>' . self::notices(array('antall' => 6, 'kladder' => $atts['kladder'])) . '</div><div><h2>Aktuelt</h2>' . self::current_items(array('antall' => 6, 'kladder' => $atts['kladder'])) . '</div><div><h2>Arrangementer</h2>' . self::events(array('antall' => 6, 'kladder' => $atts['kladder'])) . '</div><div><h2>Ledige stillinger</h2>' . self::jobs(array('antall' => 6, 'kladder' => $atts['kladder'])) . '</div>' . $promo . '<div><h2>Finn i Hadsel</h2>' . self::directory(array('antall' => 9, 'kladder' => $atts['kladder'])) . '</div></section>';
+    }
+
+    public static function jobs(array $atts = array()): string
+    {
+        $atts = shortcode_atts(array('antall' => 12, 'kladder' => '0'), $atts, 'lokalportalen_jobber');
+        $post_status = $atts['kladder'] === '1' && current_user_can('edit_posts') ? array('publish', 'draft') : 'publish';
+        $today = current_time('Y-m-d');
+        return self::render_query(new WP_Query(array(
+            'post_type' => 'lp_job',
+            'post_status' => $post_status,
+            'posts_per_page' => min(60, max(1, absint($atts['antall']))),
+            'orderby' => 'date',
+            'order' => 'DESC',
+            'meta_query' => array(
+                'relation' => 'OR',
+                array('key' => '_lp_application_deadline', 'value' => $today, 'compare' => '>=', 'type' => 'DATE'),
+                array('key' => '_lp_application_deadline', 'value' => '', 'compare' => '='),
+                array('key' => '_lp_application_deadline', 'compare' => 'NOT EXISTS'),
+            ),
+            'no_found_rows' => true,
+        )), 'lp-job-list');
     }
 
     public static function notices(array $atts = array()): string
@@ -217,6 +239,10 @@ final class LP_Shortcodes
             $venue = (string) get_post_meta(get_the_ID(), '_lp_venue', true);
             $website = (string) get_post_meta(get_the_ID(), '_lp_website', true);
             $address = (string) get_post_meta(get_the_ID(), '_lp_address', true);
+            $employer = (string) get_post_meta(get_the_ID(), '_lp_employer', true);
+            $deadline = (string) get_post_meta(get_the_ID(), '_lp_application_deadline', true);
+            $employment_type = (string) get_post_meta(get_the_ID(), '_lp_employment_type', true);
+            $position_percentage = (string) get_post_meta(get_the_ID(), '_lp_position_percentage', true);
             $external_image = (string) get_post_meta(get_the_ID(), '_lp_image_url', true);
             $post_type = get_post_type();
             echo '<article class="lp-card">';
@@ -229,6 +255,9 @@ final class LP_Shortcodes
             if ($source_name) {
                 echo '<span>' . esc_html($source_name) . '</span>';
             }
+            if ($post_type === 'lp_job' && $employer) {
+                echo '<span>' . esc_html($employer) . '</span>';
+            }
             if ($post_type === 'lp_current') {
                 echo '<time datetime="' . esc_attr(get_the_date(DATE_W3C)) . '">' . esc_html(get_the_date('j. M Y')) . '</time>';
             }
@@ -237,6 +266,15 @@ final class LP_Shortcodes
             }
             if ($post_type === 'lp_notice' && $expires_at) {
                 echo '<span>Gjelder til ' . esc_html(wp_date('j. M Y H:i', strtotime($expires_at))) . '</span>';
+            }
+            if ($post_type === 'lp_job' && $deadline) {
+                echo '<span>Søknadsfrist ' . esc_html(wp_date('j. M Y', strtotime($deadline))) . '</span>';
+            }
+            if ($post_type === 'lp_job' && $employment_type) {
+                echo '<span>' . esc_html($employment_type) . '</span>';
+            }
+            if ($post_type === 'lp_job' && $position_percentage) {
+                echo '<span>' . esc_html($position_percentage) . '</span>';
             }
             if ($venue) {
                 echo '<span>' . esc_html($venue) . '</span>';

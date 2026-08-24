@@ -6,7 +6,7 @@ HadselPortalen er en automatisert lokal informasjonsportal for Hadsel kommune. P
 
 Repoet inneholder første versjon av den gjenbrukbare WordPress-pluginen **Lokalportalen Core**. Den etablerer:
 
-- innholdstypene Kilde, Sted, Aktuelt, Arrangement og Praktisk melding
+- innholdstypene Kilde, Sted, Aktuelt, Arrangement, Praktisk melding og Ledig stilling
 - felles taksonomier for sted og kategori
 - strukturerte felt for kilde, datoer, kartposisjon og kontrollstatus
 - RSS/Atom-import med kilde-ID og URL-basert duplikatkontroll
@@ -42,6 +42,7 @@ Produksjonsversjonen av `HadselPortalen RSS 0.2.0` er arkivert uendret i `legacy
 - `[lokalportalen_forside]` viser praktiske meldinger, aktuelt, arrangementer, VisitStokmarknes-promo og katalog. Promoen kan skjules med `promo="0"` eller tilpasses med `promo_tittel`, `promo_tekst`, `promo_url` og `promo_lenketekst`.
 - `[lokalportalen_meldinger]` viser aktive praktiske meldinger; meldinger med passert utløpsdato skjules automatisk.
 - `[lokalportalen_aktuelt]`, `[lokalportalen_arrangementer]` og `[lokalportalen_finn]` viser hver sin innholdstype.
+- `[lokalportalen_jobber]` viser aktive stillinger og skjuler dem automatisk etter søknadsfristen.
 - `[lokalportalen_finn filtre="1"]` gir søk og filtre for type, sted og kategori.
 - `[lokalportalen_promo tittel="Opplev Stokmarknes" tekst="En liten guide til byen." url="https://visitstokmarknes.com/" lenketekst="Besøk VisitStokmarknes"]` lager en kompakt promoflate uten å låse kjernen til én portal.
 - `antall` begrenser resultatet. `kladder="1"` inkluderer kladder bare for innloggede brukere som kan redigere innlegg.

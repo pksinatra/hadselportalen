@@ -13,6 +13,7 @@
 | Aktuelt | `lp_current` | Importert eller redaksjonell melding med originalkilde |
 | Arrangement | `lp_event` | Tidsavgrenset aktivitet med automatisk filtrering av utløpte hendelser |
 | Praktisk melding | `lp_notice` | Tidsaktuell drifts- eller samfunnsinformasjon med valgfri utløpsdato |
+| Ledig stilling | `lp_job` | Kildelenket jobbannonse med arbeidsgiver, sted og automatisk utløp etter søknadsfrist |
 | Importlogg | `lp_import_log` | Teknisk, ikke-offentlig spor for hver importkjøring |
 
 Taksonomiene `lp_location` og `lp_category` deles av portalinnholdet. Dette gir konsistente filtre uten å blande portaldata med vanlige WordPress-kategorier.

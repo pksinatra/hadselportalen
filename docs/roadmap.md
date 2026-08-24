@@ -29,6 +29,16 @@ Det første innholdsutvalget prioriterer Stokmarknes 250, Vesterålen Vinfestiva
 - Innføre «gjør krav på oppføringen» som en moderert forespørsel, ikke automatisk eierskifte.
 - Varsle redaktør om oppføringer som ikke er kontrollert innen valgt tidsgrense.
 
+## Ledige stillinger
+
+- Bruke NAVs registrerte stillingsfeed som hovedkilde og filtrere geografisk til Hadsel.
+- Bruke NAV-data også når originalannonsen kommer fra FINN, fremfor å skrape FINN direkte.
+- Lage en egen Teamtailor-adapter for Hadsel-relevante Nordlaks-stillinger.
+- Koble på dokumenterte lokale karrieresider én om gangen.
+- Lagre original URL, arbeidsgiver, arbeidssted, ansettelsesform, stillingsprosent og søknadsfrist.
+- Skjule utløpte eller trukne annonser automatisk.
+- Beholde søknadsprosessen hos originalkilden; HadselPortalen skal ikke motta jobbsøknader.
+
 ## Praktiske datakilder
 
 Integrasjoner innføres én om gangen gjennom normaliserte adaptere:

@@ -25,6 +25,17 @@ Dette dokumentet beskriver planlagt bruk av utvalgte samarbeidspartnerprosjekter
   - aktuelle programendringer som korte meldinger når det finnes en stabil kilde
 - Billetter og program skal fortsatt åpnes hos festivalens originalkilder.
 
+## Nordlaks
+
+- Nettsted: `https://nordlaks.no/`
+- Karriereportal: `https://nordlaks.teamtailor.com/jobs`
+- Rolle i portalen: sentral lokal virksomhet, jobb-/karrierekilde og kilde til relevante næringslivssaker.
+- Portalinnhold:
+  - kvalitetssikret virksomhetsprofil i «Finn i Hadsel»
+  - aktive Hadsel-relevante stillinger på jobbsiden
+  - korte aktuelle saker med lenke til originalartikkelen
+- Stillinger uten arbeidssted i Hadsel skal ikke automatisk tas med bare fordi arbeidsgiveren er Nordlaks.
+
 ## VisitStokmarknes – Explore
 
 - Kanonisk kilde og lenkemål: `https://visitstokmarknes.com/explore/`
