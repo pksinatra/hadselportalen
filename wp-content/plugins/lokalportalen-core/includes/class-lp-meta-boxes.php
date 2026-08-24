@@ -39,7 +39,7 @@ final class LP_Meta_Boxes
 
     public static function register_meta(): void
     {
-        foreach (array('lp_source', 'lp_place', 'lp_current', 'lp_event', 'lp_business', 'lp_experience', 'lp_organization') as $post_type) {
+        foreach (array('lp_source', 'lp_place', 'lp_current', 'lp_event', 'lp_notice', 'lp_business', 'lp_experience', 'lp_organization') as $post_type) {
             foreach (array_keys(self::FIELDS) as $key) {
                 register_post_meta($post_type, $key, array(
                     'type' => 'string',
@@ -65,7 +65,7 @@ final class LP_Meta_Boxes
 
     public static function add_boxes(): void
     {
-        foreach (array('lp_place', 'lp_current', 'lp_event', 'lp_business', 'lp_experience', 'lp_organization') as $post_type) {
+        foreach (array('lp_place', 'lp_current', 'lp_event', 'lp_notice', 'lp_business', 'lp_experience', 'lp_organization') as $post_type) {
             add_meta_box('lp_details', 'Portaldata', array(__CLASS__, 'render_details'), $post_type, 'normal', 'default');
         }
 
@@ -78,6 +78,9 @@ final class LP_Meta_Boxes
         $allowed = array('_lp_source_url', '_lp_website', '_lp_external_id', '_lp_checked_at', '_lp_latitude', '_lp_longitude');
         if ($post->post_type === 'lp_event') {
             $allowed = array_merge($allowed, array('_lp_start_at', '_lp_end_at', '_lp_expires_at', '_lp_venue', '_lp_booking_url'));
+        }
+        if ($post->post_type === 'lp_notice') {
+            $allowed[] = '_lp_expires_at';
         }
         if (in_array($post->post_type, array('lp_business', 'lp_experience', 'lp_organization'), true)) {
             $allowed = array_merge($allowed, array('_lp_address', '_lp_phone', '_lp_email', '_lp_opening_hours', '_lp_booking_url'));
@@ -134,7 +137,7 @@ final class LP_Meta_Boxes
         if (!current_user_can('edit_post', $post_id)) {
             return;
         }
-        $supported = array('lp_source', 'lp_place', 'lp_current', 'lp_event', 'lp_business', 'lp_experience', 'lp_organization');
+        $supported = array('lp_source', 'lp_place', 'lp_current', 'lp_event', 'lp_notice', 'lp_business', 'lp_experience', 'lp_organization');
         if (!in_array($post->post_type, $supported, true)) {
             return;
         }

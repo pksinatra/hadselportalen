@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Lokalportalen Core
  * Description: Strukturert innhold og kildebasert import for lokale informasjonsportaler.
- * Version: 0.3.2
+ * Version: 0.4.0
  * Author: HadselPortalen
  * Text Domain: lokalportalen
  * Requires at least: 6.6
@@ -15,7 +15,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('LP_CORE_VERSION', '0.3.2');
+define('LP_CORE_VERSION', '0.4.0');
 define('LP_CORE_FILE', __FILE__);
 define('LP_CORE_DIR', plugin_dir_path(__FILE__));
 
@@ -34,6 +34,7 @@ final class LP_Core
         LP_Importer::register_hooks();
         LP_Admin::register_hooks();
         LP_Shortcodes::register_hooks();
+        add_action('init', array(__CLASS__, 'maybe_upgrade'), 20);
     }
 
     public static function activate(): void
@@ -41,12 +42,22 @@ final class LP_Core
         LP_Post_Types::register();
         LP_Importer::schedule();
         flush_rewrite_rules();
+        update_option('lp_core_version', LP_CORE_VERSION);
     }
 
     public static function deactivate(): void
     {
         LP_Importer::unschedule();
         flush_rewrite_rules();
+    }
+
+    public static function maybe_upgrade(): void
+    {
+        if (get_option('lp_core_version') === LP_CORE_VERSION) {
+            return;
+        }
+        flush_rewrite_rules(false);
+        update_option('lp_core_version', LP_CORE_VERSION);
     }
 }
 

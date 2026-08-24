@@ -12,6 +12,7 @@
 | Sted | `lp_place` | Lokalsamfunn eller geografisk sted |
 | Aktuelt | `lp_current` | Importert eller redaksjonell melding med originalkilde |
 | Arrangement | `lp_event` | Tidsavgrenset aktivitet med automatisk filtrering av utløpte hendelser |
+| Praktisk melding | `lp_notice` | Tidsaktuell drifts- eller samfunnsinformasjon med valgfri utløpsdato |
 | Importlogg | `lp_import_log` | Teknisk, ikke-offentlig spor for hver importkjøring |
 
 Taksonomiene `lp_location` og `lp_category` deles av portalinnholdet. Dette gir konsistente filtre uten å blande portaldata med vanlige WordPress-kategorier.
@@ -30,7 +31,7 @@ Importer lagrer aldri hele originalartikkelen som standard. Innholdet består av
 
 ## Videre utvidelser
 
-Planlagte typer etter første fase er Virksomhet, Opplevelse, Lag og forening og Praktisk melding. API-kilder kan implementere samme normaliserte grensesnitt som RSS-importøren.
+Typene Virksomhet, Opplevelse, Lag og forening og Praktisk melding er lagt til etter første fase. API-kilder kan implementere samme normaliserte grensesnitt som RSS-importøren.
 
 ## Personvern og redaksjonell kontroll
 
@@ -39,4 +40,3 @@ Planlagte typer etter første fase er Virksomhet, Opplevelse, Lag og forening og
 - Alle importerte elementer viser kilden tydelig.
 - Administrator kan deaktivere en kilde uten å slette historikken.
 - Loggen inneholder tekniske resultater, men skal ikke inneholde passord eller API-nøkler.
-

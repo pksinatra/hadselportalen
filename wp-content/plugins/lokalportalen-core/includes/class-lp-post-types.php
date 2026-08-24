@@ -19,6 +19,7 @@ final class LP_Post_Types
         self::post_type('lp_place', 'Sted', 'Steder', 'dashicons-location-alt', true, array('title', 'editor', 'excerpt', 'thumbnail'));
         self::post_type('lp_current', 'Aktuelt', 'Aktuelt', 'dashicons-megaphone', true, array('title', 'editor', 'excerpt', 'thumbnail', 'author'));
         self::post_type('lp_event', 'Arrangement', 'Arrangementer', 'dashicons-calendar-alt', true, array('title', 'editor', 'excerpt', 'thumbnail', 'author'));
+        self::post_type('lp_notice', 'Praktisk melding', 'Praktiske meldinger', 'dashicons-info-outline', true, array('title', 'editor', 'excerpt', 'thumbnail', 'author'));
         self::post_type('lp_business', 'Virksomhet', 'Virksomheter', 'dashicons-store', true, array('title', 'editor', 'excerpt', 'thumbnail', 'author'));
         self::post_type('lp_experience', 'Opplevelse', 'Opplevelser', 'dashicons-palmtree', true, array('title', 'editor', 'excerpt', 'thumbnail', 'author'));
         self::post_type('lp_organization', 'Lag eller forening', 'Lag og foreninger', 'dashicons-groups', true, array('title', 'editor', 'excerpt', 'thumbnail', 'author'));
@@ -40,7 +41,7 @@ final class LP_Post_Types
         );
 
         foreach ($taxonomy_labels as $taxonomy => $labels) {
-            register_taxonomy($taxonomy, array('lp_place', 'lp_current', 'lp_event', 'lp_business', 'lp_experience', 'lp_organization'), array(
+            register_taxonomy($taxonomy, array('lp_place', 'lp_current', 'lp_event', 'lp_notice', 'lp_business', 'lp_experience', 'lp_organization'), array(
                 'labels' => array('name' => $labels[0], 'singular_name' => $labels[1]),
                 'public' => true,
                 'show_in_rest' => true,

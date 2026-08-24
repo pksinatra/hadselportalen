@@ -6,14 +6,14 @@ HadselPortalen er en automatisert lokal informasjonsportal for Hadsel kommune. P
 
 Repoet inneholder første versjon av den gjenbrukbare WordPress-pluginen **Lokalportalen Core**. Den etablerer:
 
-- innholdstypene Kilde, Sted, Aktuelt og Arrangement
+- innholdstypene Kilde, Sted, Aktuelt, Arrangement og Praktisk melding
 - felles taksonomier for sted og kategori
 - strukturerte felt for kilde, datoer, kartposisjon og kontrollstatus
 - RSS/Atom-import med kilde-ID og URL-basert duplikatkontroll
 - publiseringsmodus per kilde: kladd eller direkte publisering
 - importlogg og manuell import fra WordPress-administrasjonen
 - automatisk import via WordPress-cron, med støtte for ekte server-cron
-- shortcodes for aktuelt, arrangementer og en enkel portaloversikt
+- shortcodes for aktuelt, arrangementer, praktiske meldinger, katalog og en enkel portaloversikt
 
 Eksisterende WordPress-innhold og pluginen `hadsel-rss` endres ikke av denne kodebasen.
 
@@ -36,3 +36,10 @@ php tests/source-contract.php
 Se [docs/operations.md](docs/operations.md) før installasjon eller oppdatering og [docs/deployments.md](docs/deployments.md) for utrullingshistorikk.
 
 Produksjonsversjonen av `HadselPortalen RSS 0.2.0` er arkivert uendret i `legacy/hadsel-rss-0.2.0/`.
+
+## Shortcodes
+
+- `[lokalportalen_forside]` viser praktiske meldinger, aktuelt, arrangementer og katalog.
+- `[lokalportalen_meldinger]` viser aktive praktiske meldinger; meldinger med passert utløpsdato skjules automatisk.
+- `[lokalportalen_aktuelt]`, `[lokalportalen_arrangementer]` og `[lokalportalen_finn]` viser hver sin innholdstype.
+- `antall` begrenser resultatet. `kladder="1"` inkluderer kladder bare for innloggede brukere som kan redigere innlegg.

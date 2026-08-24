@@ -12,6 +12,7 @@ final class LP_Shortcodes
     {
         add_shortcode('lokalportalen_aktuelt', array(__CLASS__, 'current_items'));
         add_shortcode('lokalportalen_arrangementer', array(__CLASS__, 'events'));
+        add_shortcode('lokalportalen_meldinger', array(__CLASS__, 'notices'));
         add_shortcode('lokalportalen_forside', array(__CLASS__, 'portal'));
         add_shortcode('lokalportalen_finn', array(__CLASS__, 'directory'));
         add_action('wp_enqueue_scripts', array(__CLASS__, 'register_styles'));
@@ -58,7 +59,28 @@ final class LP_Shortcodes
     public static function portal(array $atts = array()): string
     {
         $atts = shortcode_atts(array('kladder' => '0'), $atts, 'lokalportalen_forside');
-        return '<section class="lokalportalen-overview"><div><h2>Aktuelt</h2>' . self::current_items(array('antall' => 6, 'kladder' => $atts['kladder'])) . '</div><div><h2>Arrangementer</h2>' . self::events(array('antall' => 6, 'kladder' => $atts['kladder'])) . '</div><div><h2>Finn i Hadsel</h2>' . self::directory(array('antall' => 9, 'kladder' => $atts['kladder'])) . '</div></section>';
+        return '<section class="lokalportalen-overview"><div><h2>Praktiske meldinger</h2>' . self::notices(array('antall' => 6, 'kladder' => $atts['kladder'])) . '</div><div><h2>Aktuelt</h2>' . self::current_items(array('antall' => 6, 'kladder' => $atts['kladder'])) . '</div><div><h2>Arrangementer</h2>' . self::events(array('antall' => 6, 'kladder' => $atts['kladder'])) . '</div><div><h2>Finn i Hadsel</h2>' . self::directory(array('antall' => 9, 'kladder' => $atts['kladder'])) . '</div></section>';
+    }
+
+    public static function notices(array $atts = array()): string
+    {
+        $atts = shortcode_atts(array('antall' => 8, 'kladder' => '0'), $atts, 'lokalportalen_meldinger');
+        $post_status = $atts['kladder'] === '1' && current_user_can('edit_posts') ? array('publish', 'draft') : 'publish';
+        $now = current_time('Y-m-d\TH:i');
+        return self::render_query(new WP_Query(array(
+            'post_type' => 'lp_notice',
+            'post_status' => $post_status,
+            'posts_per_page' => min(30, max(1, absint($atts['antall']))),
+            'orderby' => 'date',
+            'order' => 'DESC',
+            'meta_query' => array(
+                'relation' => 'OR',
+                array('key' => '_lp_expires_at', 'value' => $now, 'compare' => '>=', 'type' => 'CHAR'),
+                array('key' => '_lp_expires_at', 'value' => '', 'compare' => '='),
+                array('key' => '_lp_expires_at', 'compare' => 'NOT EXISTS'),
+            ),
+            'no_found_rows' => true,
+        )), 'lp-notice-list');
     }
 
     public static function directory(array $atts = array()): string
@@ -92,6 +114,7 @@ final class LP_Shortcodes
             $source_url = (string) get_post_meta(get_the_ID(), '_lp_source_url', true);
             $source_name = (string) get_post_meta(get_the_ID(), '_lp_source_name', true);
             $start_at = (string) get_post_meta(get_the_ID(), '_lp_start_at', true);
+            $expires_at = (string) get_post_meta(get_the_ID(), '_lp_expires_at', true);
             $venue = (string) get_post_meta(get_the_ID(), '_lp_venue', true);
             $website = (string) get_post_meta(get_the_ID(), '_lp_website', true);
             $address = (string) get_post_meta(get_the_ID(), '_lp_address', true);
@@ -112,6 +135,9 @@ final class LP_Shortcodes
             }
             if ($start_at) {
                 echo '<span>' . esc_html(wp_date('j. M Y H:i', strtotime($start_at))) . '</span>';
+            }
+            if ($post_type === 'lp_notice' && $expires_at) {
+                echo '<span>Gjelder til ' . esc_html(wp_date('j. M Y H:i', strtotime($expires_at))) . '</span>';
             }
             if ($venue) {
                 echo '<span>' . esc_html($venue) . '</span>';

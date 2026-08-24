@@ -10,10 +10,15 @@
 
 .lp-current-list,
 .lp-event-list,
+.lp-notice-list,
 .lp-directory-list {
   display: grid;
   gap: 1rem;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+}
+
+.lp-notice-list .lp-card {
+  border-top: 4px solid #075c74;
 }
 
 .lp-directory-list .lp-card {

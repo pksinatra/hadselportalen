@@ -50,6 +50,7 @@ Anbefalt intervall er hvert 15. minutt. Pluginens egen importjobb kjører timevi
 - Test både kladdemodus og publiseringsmodus.
 - Kontroller original URL, kilde, publiseringsdato og utdrag.
 - Kontroller at utløpte arrangementer ikke vises i shortcode.
+- Kontroller at praktiske meldinger uten utløpsdato vises, og at meldinger med passert utløpsdato skjules.
 - Kontroller adminloggen og at ingen hemmeligheter logges.
 - Kontroller forsiden på mobil og desktop før eventuell innbygging.
 
