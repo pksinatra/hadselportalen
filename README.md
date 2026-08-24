@@ -33,7 +33,7 @@ find wp-content/plugins/lokalportalen-core -name '*.php' -print0 | xargs -0 -n1 
 php tests/source-contract.php
 ```
 
-Se [docs/operations.md](docs/operations.md) før installasjon eller oppdatering, [docs/deployments.md](docs/deployments.md) for utrullingshistorikk og [docs/roadmap.md](docs/roadmap.md) for videre utviklingsrekkefølge.
+Se [docs/operations.md](docs/operations.md) før installasjon eller oppdatering, [docs/deployments.md](docs/deployments.md) for utrullingshistorikk, [docs/roadmap.md](docs/roadmap.md) for videre utviklingsrekkefølge og [docs/content-sources.md](docs/content-sources.md) for prioriterte samarbeidspartnerkilder.
 
 Produksjonsversjonen av `HadselPortalen RSS 0.2.0` er arkivert uendret i `legacy/hadsel-rss-0.2.0/`.
 

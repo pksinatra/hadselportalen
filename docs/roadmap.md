@@ -18,6 +18,8 @@ Denne planen skiller mellom den gjenbrukbare `Lokalportalen Core` og Hadsel-spes
 5. Vise den kompakte VisitStokmarknes-promoen på portalflaten.
 6. Holde prototypen skjult for vanlige besøkende til innhold, kilder og visning er godkjent.
 
+Det første innholdsutvalget prioriterer Stokmarknes 250, Vesterålen Vinfestival og norske bearbeidinger av VisitStokmarknes Explore. Se [content-sources.md](content-sources.md).
+
 ## Innsending og eierskap
 
 - Lage separate skjemaer for arrangement og katalogoppføring.
