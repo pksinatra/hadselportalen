@@ -182,3 +182,44 @@
 .lp-card h3 a:hover {
   text-decoration: underline;
 }
+
+.lp-community-groups__intro {
+  color: #52666e;
+  margin: -.45rem 0 1.2rem;
+}
+
+.lp-community-groups__grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+}
+
+.lp-community-group {
+  background: #eef4fb;
+  border: 1px solid rgba(24, 78, 119, .16);
+  border-radius: 14px;
+  padding: clamp(1rem, 2vw, 1.4rem);
+}
+
+.lp-community-group h3 {
+  color: #0c2a36;
+  font-size: 1.2rem;
+  margin: .55rem 0 .65rem;
+}
+
+.lp-community-group p {
+  margin: 0 0 1rem;
+}
+
+.lp-community-group a {
+  color: #075c74;
+  font-weight: 700;
+}
+
+.lp-community-group__privacy {
+  color: #52666e;
+  font-size: .75rem;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}

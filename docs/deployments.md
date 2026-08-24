@@ -39,3 +39,11 @@ Den eldre `HadselPortalen RSS 0.2.0` forble aktiv og uendret.
 - La inn skjulte, kategoriserte utkast for Nordlaks, Stokmarknes 250, Vesterålen Vinfestival, Hurtigrutemuseet og Storheia.
 - Kontrollerte at den skjulte portalen viser startinnholdet, og at VisitStokmarknes peker til `visitstokmarknes.com`.
 - Offentlig forside forble uendret. NAV-feed og FINN-relatert arbeid er satt på pause i påvente av NAV-tilgang.
+
+## 2026-08-24 – Lokalportalen Core 0.7.0
+
+- La til shortcode og portalmodul for utvalgte lokale Facebook-grupper.
+- Viser `Hadselværing` som privat gruppe og `Gamle bilder fra Hadsel` som offentlig gruppe.
+- Modulen er en lenkesamling og henter ikke innlegg, medlemsdata eller andre personopplysninger fra Facebook.
+- Verifiserte begge gruppelenkene, personvernmerkingen og forklaringsteksten i den skjulte portaltesten.
+- Kontrollerte at VisitStokmarknes fortsatt bruker `.com`, og at offentlig forside er uendret.

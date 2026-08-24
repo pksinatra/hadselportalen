@@ -17,6 +17,7 @@ final class LP_Shortcodes
         add_shortcode('lokalportalen_forside', array(__CLASS__, 'portal'));
         add_shortcode('lokalportalen_finn', array(__CLASS__, 'directory'));
         add_shortcode('lokalportalen_promo', array(__CLASS__, 'promo'));
+        add_shortcode('lokalportalen_facebookgrupper', array(__CLASS__, 'facebook_groups'));
         add_action('wp_enqueue_scripts', array(__CLASS__, 'register_styles'));
     }
 
@@ -67,6 +68,7 @@ final class LP_Shortcodes
             'promo_tekst' => 'Oppdag byen, Hurtigrutehistorien og sentrum med VisitStokmarknes.',
             'promo_url' => 'https://visitstokmarknes.com/',
             'promo_lenketekst' => 'Besøk VisitStokmarknes',
+            'facebookgrupper' => '1',
         ), $atts, 'lokalportalen_forside');
         $promo = $atts['promo'] === '1' ? self::promo(array(
             'tittel' => $atts['promo_tittel'],
@@ -74,7 +76,8 @@ final class LP_Shortcodes
             'url' => $atts['promo_url'],
             'lenketekst' => $atts['promo_lenketekst'],
         )) : '';
-        return '<section class="lokalportalen-overview"><div><h2>Praktiske meldinger</h2>' . self::notices(array('antall' => 6, 'kladder' => $atts['kladder'])) . '</div><div><h2>Aktuelt</h2>' . self::current_items(array('antall' => 6, 'kladder' => $atts['kladder'])) . '</div><div><h2>Arrangementer</h2>' . self::events(array('antall' => 6, 'kladder' => $atts['kladder'])) . '</div><div><h2>Ledige stillinger</h2>' . self::jobs(array('antall' => 6, 'kladder' => $atts['kladder'])) . '</div>' . $promo . '<div><h2>Finn i Hadsel</h2>' . self::directory(array('antall' => 9, 'kladder' => $atts['kladder'])) . '</div></section>';
+        $facebook_groups = $atts['facebookgrupper'] === '1' ? self::facebook_groups() : '';
+        return '<section class="lokalportalen-overview"><div><h2>Praktiske meldinger</h2>' . self::notices(array('antall' => 6, 'kladder' => $atts['kladder'])) . '</div><div><h2>Aktuelt</h2>' . self::current_items(array('antall' => 6, 'kladder' => $atts['kladder'])) . '</div><div><h2>Arrangementer</h2>' . self::events(array('antall' => 6, 'kladder' => $atts['kladder'])) . '</div><div><h2>Ledige stillinger</h2>' . self::jobs(array('antall' => 6, 'kladder' => $atts['kladder'])) . '</div>' . $promo . '<div><h2>Finn i Hadsel</h2>' . self::directory(array('antall' => 9, 'kladder' => $atts['kladder'])) . '</div>' . $facebook_groups . '</section>';
     }
 
     public static function jobs(array $atts = array()): string
@@ -188,6 +191,35 @@ final class LP_Shortcodes
             $url,
             esc_html((string) $atts['lenketekst'])
         );
+    }
+
+    public static function facebook_groups(array $atts = array()): string
+    {
+        $atts = shortcode_atts(array(
+            'tittel' => 'Lokale Facebook-grupper',
+        ), $atts, 'lokalportalen_facebookgrupper');
+        $groups = array(
+            array(
+                'name' => 'Hadselværing',
+                'description' => 'Lokal prat, tips og små og store hendelser fra Hadsel.',
+                'privacy' => 'Privat gruppe',
+                'url' => 'https://www.facebook.com/groups/146806955444507',
+            ),
+            array(
+                'name' => 'Gamle bilder fra Hadsel',
+                'description' => 'Historiske bilder, steder og fortellinger fra hele Hadsel.',
+                'privacy' => 'Offentlig gruppe',
+                'url' => 'https://www.facebook.com/groups/951843024865810',
+            ),
+        );
+        wp_enqueue_style('lokalportalen-core');
+        ob_start();
+        echo '<div class="lp-community-groups"><h2>' . esc_html((string) $atts['tittel']) . '</h2><p class="lp-community-groups__intro">Gruppene åpnes på Facebook. HadselPortalen henter ikke medlemsinnlegg eller personopplysninger.</p><div class="lp-community-groups__grid">';
+        foreach ($groups as $group) {
+            echo '<article class="lp-community-group"><span class="lp-community-group__privacy">' . esc_html($group['privacy']) . '</span><h3>' . esc_html($group['name']) . '</h3><p>' . esc_html($group['description']) . '</p><a href="' . esc_url($group['url']) . '" rel="noopener noreferrer">Åpne gruppen <span aria-hidden="true">→</span></a></article>';
+        }
+        echo '</div></div>';
+        return (string) ob_get_clean();
     }
 
     private static function directory_filters(array $type_labels, string $selected_type, int $selected_location, int $selected_category, string $search, bool $show_type): string
