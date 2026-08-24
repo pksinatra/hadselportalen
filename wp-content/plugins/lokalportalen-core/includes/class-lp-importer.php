@@ -70,6 +70,14 @@ final class LP_Importer
             return $result;
         }
 
+        if (get_post_meta($source_id, '_lp_source_type', true) === 'teamtailor_jobs') {
+            self::import_teamtailor_jobs($source, $url, $result);
+            update_post_meta($source_id, '_lp_last_import_at', current_time('mysql', true));
+            update_post_meta($source_id, '_lp_last_import_summary', wp_json_encode($result));
+            self::log($result);
+            return $result;
+        }
+
         require_once ABSPATH . WPINC . '/feed.php';
         $feed = fetch_feed($url);
         if (is_wp_error($feed)) {
@@ -213,6 +221,128 @@ final class LP_Importer
         }
     }
 
+    private static function import_teamtailor_jobs(WP_Post $source, string $url, array &$result): void
+    {
+        require_once ABSPATH . WPINC . '/feed.php';
+        $feed = fetch_feed($url);
+        if (is_wp_error($feed)) {
+            $result['errors'][] = $feed->get_error_message();
+            return;
+        }
+
+        $status = get_post_meta($source->ID, '_lp_publish_mode', true) === 'publish' ? 'publish' : 'draft';
+        $include = self::keywords((string) get_post_meta($source->ID, '_lp_include_keywords', true));
+        $exclude = self::keywords((string) get_post_meta($source->ID, '_lp_exclude_keywords', true));
+        $items = $feed->get_items(0, $feed->get_item_quantity(200));
+        $seen = array();
+
+        foreach ($items as $item) {
+            $permalink = esc_url_raw((string) $item->get_permalink());
+            $external_id = sanitize_text_field((string) ($item->get_id() ?: hash('sha256', $permalink)));
+            $locations = self::teamtailor_locations($item);
+            $location_text = implode(' ', $locations);
+            if (!self::passes_filters($location_text, 0, $include, $exclude, 0)) {
+                $result['filtered']++;
+                continue;
+            }
+            $seen[] = $external_id;
+            $existing_id = self::find_existing_id('lp_job', $external_id, $permalink);
+            if ($existing_id > 0) {
+                if (get_post_meta($existing_id, '_lp_removed_at', true)) {
+                    wp_update_post(array('ID' => $existing_id, 'post_status' => $status));
+                    delete_post_meta($existing_id, '_lp_removed_at');
+                }
+                $result['skipped']++;
+                continue;
+            }
+
+            $title = sanitize_text_field(wp_strip_all_tags((string) $item->get_title()));
+            $description = wp_trim_words(wp_strip_all_tags((string) ($item->get_description() ?: $item->get_content())), 45, '…');
+            $division = self::first_teamtailor_value($item, 'division');
+            $department = self::first_teamtailor_value($item, 'department');
+            $address = implode(', ', array_filter($locations));
+            $date = $item->get_date('Y-m-d H:i:s');
+            $post_id = wp_insert_post(array(
+                'post_type' => 'lp_job',
+                'post_status' => $status,
+                'post_title' => $title ?: 'Ledig stilling',
+                'post_excerpt' => $description,
+                'post_content' => $description,
+                'post_date' => $date ?: current_time('mysql'),
+                'meta_input' => array(
+                    '_lp_source_id' => $source->ID,
+                    '_lp_source_name' => $source->post_title,
+                    '_lp_source_url' => $permalink,
+                    '_lp_external_id' => $external_id,
+                    '_lp_employer' => $division ?: $source->post_title,
+                    '_lp_department' => $department,
+                    '_lp_address' => $address,
+                    '_lp_imported_at' => current_time('mysql', true),
+                ),
+            ), true);
+            if (is_wp_error($post_id)) {
+                $result['errors'][] = $post_id->get_error_message();
+            } else {
+                $result['created']++;
+            }
+        }
+
+        self::hide_missing_jobs($source->ID, $seen);
+    }
+
+    private static function teamtailor_locations($item): array
+    {
+        $tags = $item->get_item_tags('https://teamtailor.com/locations', 'locations') ?: array();
+        $values = array();
+        foreach (array('name', 'address', 'zip', 'city', 'country') as $tag) {
+            $values = array_merge($values, self::xml_tag_values($tags, $tag));
+        }
+        return array_values(array_unique(array_filter(array_map('sanitize_text_field', $values))));
+    }
+
+    private static function first_teamtailor_value($item, string $tag): string
+    {
+        $tags = $item->get_item_tags('https://teamtailor.com/locations', $tag) ?: array();
+        return sanitize_text_field((string) ($tags[0]['data'] ?? ''));
+    }
+
+    private static function xml_tag_values(array $nodes, string $tag): array
+    {
+        $values = array();
+        foreach ($nodes as $key => $node) {
+            if ($key === $tag && is_array($node)) {
+                foreach ($node as $entry) {
+                    if (is_array($entry) && isset($entry['data'])) {
+                        $values[] = (string) $entry['data'];
+                    }
+                }
+            }
+            if (is_array($node)) {
+                $values = array_merge($values, self::xml_tag_values($node, $tag));
+            }
+        }
+        return $values;
+    }
+
+    private static function hide_missing_jobs(int $source_id, array $seen): void
+    {
+        $job_ids = get_posts(array(
+            'post_type' => 'lp_job',
+            'post_status' => array('publish', 'draft'),
+            'posts_per_page' => -1,
+            'fields' => 'ids',
+            'meta_key' => '_lp_source_id',
+            'meta_value' => $source_id,
+        ));
+        foreach ($job_ids as $job_id) {
+            $external_id = (string) get_post_meta((int) $job_id, '_lp_external_id', true);
+            if ($external_id !== '' && !in_array($external_id, $seen, true) && !get_post_meta((int) $job_id, '_lp_removed_at', true)) {
+                wp_update_post(array('ID' => (int) $job_id, 'post_status' => 'draft'));
+                update_post_meta((int) $job_id, '_lp_removed_at', current_time('mysql', true));
+            }
+        }
+    }
+
     private static function keywords(string $csv): array
     {
         $items = array_map('trim', explode(',', mb_strtolower($csv)));
@@ -244,6 +374,11 @@ final class LP_Importer
 
     private static function exists(string $post_type, string $external_id, string $url): bool
     {
+        return self::find_existing_id($post_type, $external_id, $url) > 0;
+    }
+
+    private static function find_existing_id(string $post_type, string $external_id, string $url): int
+    {
         $meta_query = array('relation' => 'OR');
         if ($external_id !== '') {
             $meta_query[] = array('key' => '_lp_external_id', 'value' => $external_id);
@@ -252,7 +387,7 @@ final class LP_Importer
             $meta_query[] = array('key' => '_lp_source_url', 'value' => $url);
         }
         if (count($meta_query) === 1) {
-            return false;
+            return 0;
         }
 
         $query = new WP_Query(array(
@@ -263,7 +398,7 @@ final class LP_Importer
             'no_found_rows' => true,
             'meta_query' => $meta_query,
         ));
-        return $query->have_posts();
+        return $query->have_posts() ? (int) $query->posts[0] : 0;
     }
 
     private static function log(array $result): void

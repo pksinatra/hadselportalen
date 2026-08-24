@@ -10,6 +10,7 @@ Repoet inneholder første versjon av den gjenbrukbare WordPress-pluginen **Lokal
 - felles taksonomier for sted og kategori
 - strukturerte felt for kilde, datoer, kartposisjon og kontrollstatus
 - RSS/Atom-import med kilde-ID og URL-basert duplikatkontroll
+- Teamtailor-import for geografisk filtrerte stillinger med automatisk avpublisering
 - publiseringsmodus per kilde: kladd eller direkte publisering
 - importlogg og manuell import fra WordPress-administrasjonen
 - automatisk import via WordPress-cron, med støtte for ekte server-cron

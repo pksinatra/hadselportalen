@@ -242,6 +242,7 @@ final class LP_Shortcodes
             $employer = (string) get_post_meta(get_the_ID(), '_lp_employer', true);
             $deadline = (string) get_post_meta(get_the_ID(), '_lp_application_deadline', true);
             $employment_type = (string) get_post_meta(get_the_ID(), '_lp_employment_type', true);
+            $department = (string) get_post_meta(get_the_ID(), '_lp_department', true);
             $position_percentage = (string) get_post_meta(get_the_ID(), '_lp_position_percentage', true);
             $external_image = (string) get_post_meta(get_the_ID(), '_lp_image_url', true);
             $post_type = get_post_type();
@@ -272,6 +273,9 @@ final class LP_Shortcodes
             }
             if ($post_type === 'lp_job' && $employment_type) {
                 echo '<span>' . esc_html($employment_type) . '</span>';
+            }
+            if ($post_type === 'lp_job' && $department) {
+                echo '<span>' . esc_html($department) . '</span>';
             }
             if ($post_type === 'lp_job' && $position_percentage) {
                 echo '<span>' . esc_html($position_percentage) . '</span>';

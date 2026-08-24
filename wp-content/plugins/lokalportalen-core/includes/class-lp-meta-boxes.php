@@ -31,6 +31,7 @@ final class LP_Meta_Boxes
         '_lp_employer' => array('Arbeidsgiver', 'text'),
         '_lp_application_deadline' => array('Søknadsfrist', 'date'),
         '_lp_employment_type' => array('Ansettelsesform', 'text'),
+        '_lp_department' => array('Avdeling', 'text'),
         '_lp_position_percentage' => array('Stillingsprosent', 'text'),
     );
 
@@ -87,7 +88,7 @@ final class LP_Meta_Boxes
             $allowed[] = '_lp_expires_at';
         }
         if ($post->post_type === 'lp_job') {
-            $allowed = array_merge($allowed, array('_lp_employer', '_lp_application_deadline', '_lp_employment_type', '_lp_position_percentage', '_lp_address'));
+            $allowed = array_merge($allowed, array('_lp_employer', '_lp_application_deadline', '_lp_employment_type', '_lp_department', '_lp_position_percentage', '_lp_address'));
         }
         if (in_array($post->post_type, array('lp_business', 'lp_experience', 'lp_organization'), true)) {
             $allowed = array_merge($allowed, array('_lp_address', '_lp_phone', '_lp_email', '_lp_opening_hours', '_lp_booking_url'));
@@ -108,6 +109,7 @@ final class LP_Meta_Boxes
             <select id="lp_source_type" name="lp_meta[_lp_source_type]">
                 <option value="rss" <?php selected($source_type, 'rss'); ?>>RSS/Atom – Aktuelt</option>
                 <option value="dx_culture" <?php selected($source_type, 'dx_culture'); ?>>DX kulturprogram – Arrangementer</option>
+                <option value="teamtailor_jobs" <?php selected($source_type, 'teamtailor_jobs'); ?>>Teamtailor RSS – Ledige stillinger</option>
             </select>
         </p>
         <p><label for="lp_publish_mode"><strong>Publiseringsmodus</strong></label><br>
@@ -158,7 +160,7 @@ final class LP_Meta_Boxes
         if ($post->post_type === 'lp_source') {
             $mode = isset($incoming['_lp_publish_mode']) && $incoming['_lp_publish_mode'] === 'publish' ? 'publish' : 'draft';
             update_post_meta($post_id, '_lp_publish_mode', $mode);
-            $source_type = isset($incoming['_lp_source_type']) && $incoming['_lp_source_type'] === 'dx_culture' ? 'dx_culture' : 'rss';
+            $source_type = isset($incoming['_lp_source_type']) && in_array($incoming['_lp_source_type'], array('dx_culture', 'teamtailor_jobs'), true) ? $incoming['_lp_source_type'] : 'rss';
             update_post_meta($post_id, '_lp_source_type', $source_type);
             update_post_meta($post_id, '_lp_source_active', isset($incoming['_lp_source_active']) ? '1' : '0');
             update_post_meta($post_id, '_lp_max_items', (string) min(100, max(1, absint($incoming['_lp_max_items'] ?? 20))));
