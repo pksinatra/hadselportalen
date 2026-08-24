@@ -89,10 +89,14 @@ final class LP_Shortcodes
             'orderby' => 'date',
             'order' => 'DESC',
             'meta_query' => array(
-                'relation' => 'OR',
-                array('key' => '_lp_application_deadline', 'value' => $today, 'compare' => '>=', 'type' => 'DATE'),
-                array('key' => '_lp_application_deadline', 'value' => '', 'compare' => '='),
-                array('key' => '_lp_application_deadline', 'compare' => 'NOT EXISTS'),
+                'relation' => 'AND',
+                array(
+                    'relation' => 'OR',
+                    array('key' => '_lp_application_deadline', 'value' => $today, 'compare' => '>=', 'type' => 'DATE'),
+                    array('key' => '_lp_application_deadline', 'value' => '', 'compare' => '='),
+                    array('key' => '_lp_application_deadline', 'compare' => 'NOT EXISTS'),
+                ),
+                array('key' => '_lp_removed_at', 'compare' => 'NOT EXISTS'),
             ),
             'no_found_rows' => true,
         )), 'lp-job-list');

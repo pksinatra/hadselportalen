@@ -248,6 +248,9 @@ final class LP_Importer
             $seen[] = $external_id;
             $existing_id = self::find_existing_id('lp_job', $external_id, $permalink);
             if ($existing_id > 0) {
+                update_post_meta($existing_id, '_lp_source_id', $source->ID);
+                update_post_meta($existing_id, '_lp_source_name', $source->post_title);
+                update_post_meta($existing_id, '_lp_source_url', $permalink);
                 if (get_post_meta($existing_id, '_lp_removed_at', true)) {
                     wp_update_post(array('ID' => $existing_id, 'post_status' => $status));
                     delete_post_meta($existing_id, '_lp_removed_at');
