@@ -78,6 +78,22 @@ final class LP_Importer
             return $result;
         }
 
+        if (get_post_meta($source_id, '_lp_source_type', true) === 'webcruiter_jobs') {
+            self::import_webcruiter_jobs($source, $url, $result);
+            update_post_meta($source_id, '_lp_last_import_at', current_time('mysql', true));
+            update_post_meta($source_id, '_lp_last_import_summary', wp_json_encode($result));
+            self::log($result);
+            return $result;
+        }
+
+        if (get_post_meta($source_id, '_lp_source_type', true) === 'nav_jobs') {
+            self::import_nav_jobs($source, $url, $result);
+            update_post_meta($source_id, '_lp_last_import_at', current_time('mysql', true));
+            update_post_meta($source_id, '_lp_last_import_summary', wp_json_encode($result));
+            self::log($result);
+            return $result;
+        }
+
         require_once ABSPATH . WPINC . '/feed.php';
         $feed = fetch_feed($url);
         if (is_wp_error($feed)) {
@@ -248,11 +264,11 @@ final class LP_Importer
             $seen[] = $external_id;
             $existing_id = self::find_existing_id('lp_job', $external_id, $permalink);
             if ($existing_id > 0) {
+                wp_update_post(array('ID' => $existing_id, 'post_status' => $status));
                 update_post_meta($existing_id, '_lp_source_id', $source->ID);
                 update_post_meta($existing_id, '_lp_source_name', $source->post_title);
                 update_post_meta($existing_id, '_lp_source_url', $permalink);
                 if (get_post_meta($existing_id, '_lp_removed_at', true)) {
-                    wp_update_post(array('ID' => $existing_id, 'post_status' => $status));
                     delete_post_meta($existing_id, '_lp_removed_at');
                 }
                 $result['skipped']++;
@@ -301,6 +317,307 @@ final class LP_Importer
             $values = array_merge($values, self::xml_tag_values($tags, $tag));
         }
         return array_values(array_unique(array_filter(array_map('sanitize_text_field', $values))));
+    }
+
+    private static function import_webcruiter_jobs(WP_Post $source, string $url, array &$result): void
+    {
+        $query = array();
+        parse_str((string) (wp_parse_url($url, PHP_URL_QUERY) ?: ''), $query);
+        $company_id = isset($query['companylock']) ? preg_replace('/[^0-9]/', '', (string) $query['companylock']) : '';
+        if ($company_id === '') {
+            $result['errors'][] = 'Webcruiter-URL-en mangler companylock.';
+            return;
+        }
+
+        $endpoint = 'https://candidate.webcruiter.com/api/odvert/companysearch/' . $company_id;
+        $payload = array(
+            'take' => 100,
+            'skip' => 0,
+            'page' => 1,
+            'pageSize' => 100,
+            'sort' => array(array('field' => '1', 'dir' => 'desc')),
+            'filter' => array('logic' => 'and', 'filters' => array()),
+        );
+        $response = wp_remote_post($endpoint, array(
+            'timeout' => 25,
+            'user-agent' => 'Lokalportalen/' . LP_CORE_VERSION,
+            'headers' => array('Content-Type' => 'application/json'),
+            'body' => wp_json_encode($payload),
+        ));
+        if (is_wp_error($response)) {
+            $result['errors'][] = $response->get_error_message();
+            return;
+        }
+        if (wp_remote_retrieve_response_code($response) !== 200) {
+            $result['errors'][] = 'Webcruiter svarte med HTTP ' . wp_remote_retrieve_response_code($response) . '.';
+            return;
+        }
+        $data = json_decode(wp_remote_retrieve_body($response), true);
+        if (!is_array($data) || !isset($data['Data']) || !is_array($data['Data'])) {
+            $result['errors'][] = 'Webcruiter returnerte et ukjent dataformat.';
+            return;
+        }
+
+        $status = get_post_meta($source->ID, '_lp_publish_mode', true) === 'publish' ? 'publish' : 'draft';
+        $include = self::keywords((string) get_post_meta($source->ID, '_lp_include_keywords', true));
+        $exclude = self::keywords((string) get_post_meta($source->ID, '_lp_exclude_keywords', true));
+        $max_items = max(1, min(100, (int) (get_post_meta($source->ID, '_lp_max_items', true) ?: 100)));
+        $seen = array();
+        $type_labels = array('Regular' => 'Fast', 'Temp' => 'Vikariat', 'Contract' => 'Engasjement', 'Hourly-work' => 'Tilkalling');
+
+        foreach (array_slice($data['Data'], 0, $max_items) as $job) {
+            if (empty($job['IsInternet'])) {
+                $result['filtered']++;
+                continue;
+            }
+            $workplace = sanitize_text_field((string) ($job['Workplace'] ?? $job['Workplace2'] ?? $job['Workplace3'] ?? ''));
+            $department = sanitize_text_field((string) ($job['WorkPlaceFacet'] ?? ''));
+            if (!self::passes_filters($workplace . ' ' . $department, 0, $include, $exclude, 0)) {
+                $result['filtered']++;
+                continue;
+            }
+            $external_id = sanitize_text_field((string) ($job['Id'] ?? ''));
+            $permalink = esc_url_raw((string) ($job['OpenAdvertUrl'] ?? ''));
+            if ($external_id === '' || $permalink === '') {
+                $result['errors'][] = 'En Webcruiter-annonse manglet ID eller URL.';
+                continue;
+            }
+            $seen[] = $external_id;
+            $title = sanitize_text_field(wp_strip_all_tags((string) ($job['Heading'] ?? $job['HeadingNotOverruled'] ?? 'Ledig stilling')));
+            $description = wp_trim_words(wp_strip_all_tags((string) ($job['Presentation'] ?? '')), 45, '…');
+            $employer = sanitize_text_field((string) ($job['CompanyName'] ?? $source->post_title));
+            $deadline = sanitize_text_field(substr((string) ($job['ApplicationDeadline'] ?? ''), 0, 10));
+            $job_type = sanitize_text_field((string) ($job['JobType'] ?? ''));
+            $employment_type = $type_labels[$job_type] ?? $job_type;
+            $published = sanitize_text_field((string) ($job['PublishedDate'] ?? ''));
+            $published_timestamp = $published !== '' ? strtotime(str_replace('/', '-', $published)) : false;
+            $post_data = array(
+                'post_type' => 'lp_job',
+                'post_status' => $status,
+                'post_title' => $title ?: 'Ledig stilling',
+                'post_excerpt' => $description,
+                'post_content' => $description,
+                'meta_input' => array(
+                    '_lp_source_id' => $source->ID,
+                    '_lp_source_name' => $source->post_title,
+                    '_lp_source_url' => $permalink,
+                    '_lp_external_id' => $external_id,
+                    '_lp_employer' => $employer,
+                    '_lp_department' => $department,
+                    '_lp_address' => $workplace,
+                    '_lp_employment_type' => $employment_type,
+                    '_lp_application_deadline' => $deadline,
+                    '_lp_imported_at' => current_time('mysql', true),
+                ),
+            );
+            if ($published_timestamp) {
+                $post_data['post_date'] = wp_date('Y-m-d H:i:s', $published_timestamp);
+            }
+            $existing_id = self::find_existing_id('lp_job', $external_id, $permalink);
+            if ($existing_id > 0) {
+                $post_data['ID'] = $existing_id;
+                if (get_post_meta($existing_id, '_lp_removed_at', true)) {
+                    delete_post_meta($existing_id, '_lp_removed_at');
+                }
+                $updated = wp_update_post($post_data, true);
+                if (is_wp_error($updated)) {
+                    $result['errors'][] = $updated->get_error_message();
+                } else {
+                    $result['skipped']++;
+                }
+                continue;
+            }
+            $post_id = wp_insert_post($post_data, true);
+            if (is_wp_error($post_id)) {
+                $result['errors'][] = $post_id->get_error_message();
+            } else {
+                $result['created']++;
+            }
+        }
+
+        self::hide_missing_jobs($source->ID, $seen);
+    }
+
+    private static function import_nav_jobs(WP_Post $source, string $url, array &$result): void
+    {
+        $token = (string) get_post_meta($source->ID, '_lp_nav_token', true);
+        if ($token === '') {
+            $token = defined('NAV_STILLING_FEED_TOKEN') ? (string) NAV_STILLING_FEED_TOKEN : (string) getenv('NAV_STILLING_FEED_TOKEN');
+        }
+        if ($token === '') {
+            $result['errors'][] = 'NAV_STILLING_FEED_TOKEN er ikke konfigurert på serveren.';
+            return;
+        }
+        $parts = wp_parse_url($url);
+        if (($parts['host'] ?? '') !== 'pam-stilling-feed.nav.no') {
+            $result['errors'][] = 'NAV-kilden må bruke pam-stilling-feed.nav.no.';
+            return;
+        }
+
+        $base = 'https://pam-stilling-feed.nav.no';
+        $cursor = (string) get_post_meta($source->ID, '_lp_nav_cursor_url', true);
+        $request_url = $cursor !== '' ? $cursor : $url;
+        $status = get_post_meta($source->ID, '_lp_publish_mode', true) === 'publish' ? 'publish' : 'draft';
+        $max_age_days = max(1, min(180, (int) (get_post_meta($source->ID, '_lp_max_age_days', true) ?: 180)));
+        $max_pages = 5;
+
+        for ($page = 0; $page < $max_pages; $page++) {
+            $headers = array('Accept' => 'application/json', 'Authorization' => 'Bearer ' . $token);
+            if ($cursor === '') {
+                $headers['If-Modified-Since'] = gmdate('D, d M Y H:i:s', time() - ($max_age_days * DAY_IN_SECONDS)) . ' GMT';
+            } else {
+                $etag = (string) get_post_meta($source->ID, '_lp_nav_etag', true);
+                $last_modified = (string) get_post_meta($source->ID, '_lp_nav_last_modified', true);
+                if ($etag !== '') {
+                    $headers['If-None-Match'] = $etag;
+                }
+                if ($last_modified !== '') {
+                    $headers['If-Modified-Since'] = $last_modified;
+                }
+            }
+            $response = wp_remote_get($request_url, array('timeout' => 30, 'user-agent' => 'Lokalportalen/' . LP_CORE_VERSION, 'headers' => $headers));
+            if (is_wp_error($response)) {
+                $result['errors'][] = $response->get_error_message();
+                return;
+            }
+            $response_code = wp_remote_retrieve_response_code($response);
+            if ($response_code === 304) {
+                return;
+            }
+            if ($response_code !== 200) {
+                $result['errors'][] = 'NAV svarte med HTTP ' . $response_code . '.';
+                return;
+            }
+            $data = json_decode(wp_remote_retrieve_body($response), true);
+            if (!is_array($data) || !isset($data['items']) || !is_array($data['items'])) {
+                $result['errors'][] = 'NAV returnerte et ukjent dataformat.';
+                return;
+            }
+
+            foreach ($data['items'] as $item) {
+                $entry = isset($item['_feed_entry']) && is_array($item['_feed_entry']) ? $item['_feed_entry'] : array();
+                $external_id = sanitize_text_field((string) ($entry['uuid'] ?? $item['id'] ?? ''));
+                if ($external_id === '') {
+                    $result['errors'][] = 'En NAV-oppføring manglet UUID.';
+                    continue;
+                }
+                if (($entry['status'] ?? '') !== 'ACTIVE') {
+                    self::hide_job_by_external_id($external_id);
+                    $result['filtered']++;
+                    continue;
+                }
+                if (mb_strtoupper((string) ($entry['municipal'] ?? '')) !== 'HADSEL') {
+                    $result['filtered']++;
+                    continue;
+                }
+
+                $detail_path = (string) ($item['url'] ?? '');
+                $detail_url = str_starts_with($detail_path, 'http') ? $detail_path : $base . '/' . ltrim($detail_path, '/');
+                $detail_response = wp_remote_get($detail_url, array('timeout' => 20, 'user-agent' => 'Lokalportalen/' . LP_CORE_VERSION, 'headers' => array('Accept' => 'application/json', 'Authorization' => 'Bearer ' . $token)));
+                if (is_wp_error($detail_response) || wp_remote_retrieve_response_code($detail_response) !== 200) {
+                    $result['errors'][] = 'Kunne ikke hente NAV-detaljer for ' . $external_id . '.';
+                    continue;
+                }
+                $detail = json_decode(wp_remote_retrieve_body($detail_response), true);
+                if (!is_array($detail) || ($detail['status'] ?? '') !== 'ACTIVE') {
+                    self::hide_job_by_external_id($external_id);
+                    $result['filtered']++;
+                    continue;
+                }
+                $job = is_array($detail['ad_content'] ?? null) ? $detail['ad_content'] : (is_array($detail['json'] ?? null) ? $detail['json'] : array());
+                if (!$job) {
+                    self::hide_job_by_external_id($external_id);
+                    $result['filtered']++;
+                    continue;
+                }
+                $deadline = sanitize_text_field(substr((string) ($job['applicationDue'] ?? $job['expires'] ?? ''), 0, 10));
+                if ($deadline !== '' && $deadline < current_time('Y-m-d')) {
+                    self::hide_job_by_external_id($external_id);
+                    $result['filtered']++;
+                    continue;
+                }
+                $locations = is_array($job['workLocations'] ?? null) ? $job['workLocations'] : array();
+                $location = is_array($locations[0] ?? null) ? $locations[0] : array();
+                $address = implode(', ', array_filter(array_map('sanitize_text_field', array(
+                    (string) ($location['address'] ?? ''),
+                    trim((string) ($location['postalCode'] ?? '') . ' ' . (string) ($location['city'] ?? '')),
+                ))));
+                $employer_data = is_array($job['employer'] ?? null) ? $job['employer'] : array();
+                $title = sanitize_text_field(wp_strip_all_tags((string) ($job['title'] ?? $job['jobtitle'] ?? $entry['title'] ?? 'Ledig stilling')));
+                $description = wp_trim_words(wp_strip_all_tags((string) ($job['description'] ?? $item['content_text'] ?? '')), 45, '…');
+                $permalink = esc_url_raw((string) ($job['applicationUrl'] ?? $job['sourceurl'] ?? $job['link'] ?? ''));
+                $employer = sanitize_text_field((string) ($employer_data['name'] ?? $entry['businessName'] ?? ''));
+                $employment_type = sanitize_text_field((string) ($job['engagementtype'] ?? ''));
+                $position_percentage = sanitize_text_field((string) ($job['extent'] ?? ''));
+                $published_timestamp = strtotime((string) ($job['published'] ?? ''));
+                $post_data = array(
+                    'post_type' => 'lp_job',
+                    'post_status' => $status,
+                    'post_title' => $title ?: 'Ledig stilling',
+                    'post_excerpt' => $description,
+                    'post_content' => $description,
+                    'meta_input' => array(
+                        '_lp_source_id' => $source->ID,
+                        '_lp_source_name' => $source->post_title,
+                        '_lp_source_url' => $permalink,
+                        '_lp_external_id' => $external_id,
+                        '_lp_employer' => $employer,
+                        '_lp_address' => $address,
+                        '_lp_employment_type' => $employment_type,
+                        '_lp_position_percentage' => $position_percentage,
+                        '_lp_application_deadline' => $deadline,
+                        '_lp_imported_at' => current_time('mysql', true),
+                    ),
+                );
+                if ($published_timestamp) {
+                    $post_data['post_date'] = wp_date('Y-m-d H:i:s', $published_timestamp);
+                }
+                $existing_id = self::find_existing_id('lp_job', $external_id, $permalink);
+                if ($existing_id > 0) {
+                    $post_data['ID'] = $existing_id;
+                    delete_post_meta($existing_id, '_lp_removed_at');
+                    $saved = wp_update_post($post_data, true);
+                    if (is_wp_error($saved)) {
+                        $result['errors'][] = $saved->get_error_message();
+                    } else {
+                        $result['skipped']++;
+                    }
+                } else {
+                    $saved = wp_insert_post($post_data, true);
+                    if (is_wp_error($saved)) {
+                        $result['errors'][] = $saved->get_error_message();
+                    } else {
+                        $result['created']++;
+                    }
+                }
+            }
+
+            $next_path = (string) ($data['next_url'] ?? '');
+            $current_path = (string) ($data['feed_url'] ?? '');
+            $next_url = $next_path !== '' ? (str_starts_with($next_path, 'http') ? $next_path : $base . '/' . ltrim($next_path, '/')) : '';
+            if ($next_url !== '') {
+                $request_url = $next_url;
+                $cursor = $next_url;
+                update_post_meta($source->ID, '_lp_nav_cursor_url', $next_url);
+                delete_post_meta($source->ID, '_lp_nav_etag');
+                delete_post_meta($source->ID, '_lp_nav_last_modified');
+                continue;
+            }
+            $poll_url = $current_path !== '' ? (str_starts_with($current_path, 'http') ? $current_path : $base . '/' . ltrim($current_path, '/')) : $request_url;
+            update_post_meta($source->ID, '_lp_nav_cursor_url', $poll_url);
+            update_post_meta($source->ID, '_lp_nav_etag', (string) wp_remote_retrieve_header($response, 'etag'));
+            update_post_meta($source->ID, '_lp_nav_last_modified', (string) wp_remote_retrieve_header($response, 'last-modified'));
+            return;
+        }
+    }
+
+    private static function hide_job_by_external_id(string $external_id): void
+    {
+        $job_id = self::find_existing_id('lp_job', $external_id, '');
+        if ($job_id > 0 && !get_post_meta($job_id, '_lp_removed_at', true)) {
+            wp_update_post(array('ID' => $job_id, 'post_status' => 'draft'));
+            update_post_meta($job_id, '_lp_removed_at', current_time('mysql', true));
+        }
     }
 
     private static function first_teamtailor_value($item, string $tag): string

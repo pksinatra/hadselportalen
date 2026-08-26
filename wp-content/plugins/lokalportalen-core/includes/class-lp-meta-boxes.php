@@ -104,12 +104,15 @@ final class LP_Meta_Boxes
         $mode = get_post_meta($post->ID, '_lp_publish_mode', true) ?: 'draft';
         $source_type = get_post_meta($post->ID, '_lp_source_type', true) ?: 'rss';
         $active = get_post_meta($post->ID, '_lp_source_active', true);
+        $has_nav_token = (string) get_post_meta($post->ID, '_lp_nav_token', true) !== '';
         ?>
         <p><label for="lp_source_type"><strong>Kildetype</strong></label><br>
             <select id="lp_source_type" name="lp_meta[_lp_source_type]">
                 <option value="rss" <?php selected($source_type, 'rss'); ?>>RSS/Atom – Aktuelt</option>
                 <option value="dx_culture" <?php selected($source_type, 'dx_culture'); ?>>DX kulturprogram – Arrangementer</option>
                 <option value="teamtailor_jobs" <?php selected($source_type, 'teamtailor_jobs'); ?>>Teamtailor RSS – Ledige stillinger</option>
+                <option value="webcruiter_jobs" <?php selected($source_type, 'webcruiter_jobs'); ?>>Webcruiter – Ledige stillinger</option>
+                <option value="nav_jobs" <?php selected($source_type, 'nav_jobs'); ?>>NAV stillingsfeed – Ledige stillinger</option>
             </select>
         </p>
         <p><label for="lp_publish_mode"><strong>Publiseringsmodus</strong></label><br>
@@ -119,6 +122,9 @@ final class LP_Meta_Boxes
             </select>
         </p>
         <p><label><input type="checkbox" name="lp_meta[_lp_source_active]" value="1" <?php checked($active, '1'); ?>> Aktiv kilde</label></p>
+        <p><label for="lp_nav_token"><strong>NAV-token</strong></label><br>
+            <input class="widefat" id="lp_nav_token" name="lp_meta[_lp_nav_token]" type="password" value="" autocomplete="new-password" placeholder="<?php echo esc_attr($has_nav_token ? 'Token er konfigurert – la stå tomt for å beholde' : 'Lim inn token for NAV stillingsfeed'); ?>">
+        </p>
         <?php
     }
 
@@ -160,9 +166,12 @@ final class LP_Meta_Boxes
         if ($post->post_type === 'lp_source') {
             $mode = isset($incoming['_lp_publish_mode']) && $incoming['_lp_publish_mode'] === 'publish' ? 'publish' : 'draft';
             update_post_meta($post_id, '_lp_publish_mode', $mode);
-            $source_type = isset($incoming['_lp_source_type']) && in_array($incoming['_lp_source_type'], array('dx_culture', 'teamtailor_jobs'), true) ? $incoming['_lp_source_type'] : 'rss';
+            $source_type = isset($incoming['_lp_source_type']) && in_array($incoming['_lp_source_type'], array('dx_culture', 'teamtailor_jobs', 'webcruiter_jobs', 'nav_jobs'), true) ? $incoming['_lp_source_type'] : 'rss';
             update_post_meta($post_id, '_lp_source_type', $source_type);
             update_post_meta($post_id, '_lp_source_active', isset($incoming['_lp_source_active']) ? '1' : '0');
+            if (isset($incoming['_lp_nav_token']) && trim((string) $incoming['_lp_nav_token']) !== '') {
+                update_post_meta($post_id, '_lp_nav_token', sanitize_text_field((string) $incoming['_lp_nav_token']));
+            }
             update_post_meta($post_id, '_lp_max_items', (string) min(100, max(1, absint($incoming['_lp_max_items'] ?? 20))));
             update_post_meta($post_id, '_lp_max_age_days', (string) min(365, max(0, absint($incoming['_lp_max_age_days'] ?? 30))));
         }

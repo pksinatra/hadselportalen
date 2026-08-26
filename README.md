@@ -11,6 +11,8 @@ Repoet inneholder første versjon av den gjenbrukbare WordPress-pluginen **Lokal
 - strukturerte felt for kilde, datoer, kartposisjon og kontrollstatus
 - RSS/Atom-import med kilde-ID og URL-basert duplikatkontroll
 - Teamtailor-import for geografisk filtrerte stillinger med automatisk avpublisering
+- Webcruiter-import for offentlige stillingslister med geografisk filtrering
+- NAVs autentiserte stillingsfeed med Hadsel-filtrering, endringscursor og automatisk skjuling av inaktive annonser
 - publiseringsmodus per kilde: kladd eller direkte publisering
 - importlogg og manuell import fra WordPress-administrasjonen
 - automatisk import via WordPress-cron, med støtte for ekte server-cron

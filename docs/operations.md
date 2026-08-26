@@ -44,6 +44,13 @@ https://hadselportalen.no/wp-cron.php?doing_wp_cron
 
 Anbefalt intervall er hvert 15. minutt. Pluginens egen importjobb kjører timevis og ignorerer kilder som nylig er hentet.
 
+## Hemmeligheter
+
+- NAV-token skal aldri legges i Git, logger eller dokumentasjon.
+- Lokalt kan tokenet ligge i en Git-ignorert `.env.*`-fil med filrettighet `0600`.
+- I WordPress lagres tokenet som skjult metadata på NAV-kilden. Feltet viser aldri eksisterende verdi; et tomt felt beholder tokenet.
+- `NAV_STILLING_FEED_TOKEN` kan alternativt defineres som miljøvariabel eller konstant i `wp-config.php`.
+
 ## Verifikasjon
 
 - Test at samme feed importert to ganger ikke lager duplikater.
