@@ -456,15 +456,24 @@ final class LP_Importer
 
         $base = 'https://pam-stilling-feed.nav.no';
         $cursor = (string) get_post_meta($source->ID, '_lp_nav_cursor_url', true);
-        $request_url = $cursor !== '' ? $cursor : $url;
         $status = get_post_meta($source->ID, '_lp_publish_mode', true) === 'publish' ? 'publish' : 'draft';
         $max_age_days = max(1, min(180, (int) (get_post_meta($source->ID, '_lp_max_age_days', true) ?: 180)));
         $max_pages = 5;
+        $start_since = (string) get_post_meta($source->ID, '_lp_nav_start_since', true);
+        if ($start_since === '') {
+            $start_since = gmdate('D, d M Y H:i:s', time() - ($max_age_days * DAY_IN_SECONDS)) . ' GMT';
+            update_post_meta($source->ID, '_lp_nav_start_since', $start_since);
+            $cursor = '';
+            delete_post_meta($source->ID, '_lp_nav_cursor_url');
+            delete_post_meta($source->ID, '_lp_nav_etag');
+            delete_post_meta($source->ID, '_lp_nav_last_modified');
+        }
+        $request_url = $cursor !== '' ? $cursor : $url;
 
         for ($page = 0; $page < $max_pages; $page++) {
             $headers = array('Accept' => 'application/json', 'Authorization' => 'Bearer ' . $token);
-            if ($cursor === '') {
-                $headers['If-Modified-Since'] = gmdate('D, d M Y H:i:s', time() - ($max_age_days * DAY_IN_SECONDS)) . ' GMT';
+            if ($start_since !== '') {
+                $headers['If-Modified-Since'] = $start_since;
             } else {
                 $etag = (string) get_post_meta($source->ID, '_lp_nav_etag', true);
                 $last_modified = (string) get_post_meta($source->ID, '_lp_nav_last_modified', true);
@@ -607,6 +616,7 @@ final class LP_Importer
             update_post_meta($source->ID, '_lp_nav_cursor_url', $poll_url);
             update_post_meta($source->ID, '_lp_nav_etag', (string) wp_remote_retrieve_header($response, 'etag'));
             update_post_meta($source->ID, '_lp_nav_last_modified', (string) wp_remote_retrieve_header($response, 'last-modified'));
+            delete_post_meta($source->ID, '_lp_nav_start_since');
             return;
         }
     }

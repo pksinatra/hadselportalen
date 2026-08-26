@@ -56,3 +56,14 @@ Den eldre `HadselPortalen RSS 0.2.0` forble aktiv og uendret.
 - Fjernet en udokumentert påstand om SSB-prognoser og stabil vekst.
 - La inn originallenker til Nordlaks, Skretting, Hurtigrutemuseet og VisitStokmarknes Explore (`.com`).
 - Kontrollerte den publiserte siden etter oppdatering. Forrige tekst er tilgjengelig i WordPress-revisjonene.
+
+## 2026-08-26 – Lokalportalen Core 0.9.1 og NAV stillingsfeed
+
+- Oppgraderte produksjonspluginen via WordPress sin versjonerte zip-erstatning.
+- La til NAV stillingsfeed som egen kildetype med Bearer-autentisering, eksakt kommuneavgrensning til Hadsel og håndtering av inaktive annonser.
+- Lagret det private NAV-tokenet i et maskert kildefelt. Tokenverdien er ikke skrevet i repoet eller denne loggen.
+- Opprettet den aktive kilden `NAV – ledige stillinger i Hadsel` i publiseringsmodus `Til godkjenning (kladd)`.
+- Rettet førstegangsinnhentingen slik at `If-Modified-Since` følger alle sider i den avgrensede 180-dagersperioden.
+- Fullførte førstegangsinnhentingen til NAV-feedens sluttmarkør uten importfeil.
+- Verifiserte 14 aktive NAV-stillinger for Hadsel i den skjulte jobbvisningen, blant annet stillinger hos Hadsel kommune, Nordlandssykehuset, Coop Nordland og Boreal.
+- Jobbsiden forble et utkast, og toppmenyen/offentlig forside ble ikke endret.
