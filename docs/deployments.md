@@ -67,3 +67,13 @@ Den eldre `HadselPortalen RSS 0.2.0` forble aktiv og uendret.
 - Fullførte førstegangsinnhentingen til NAV-feedens sluttmarkør uten importfeil.
 - Verifiserte 14 aktive NAV-stillinger for Hadsel i den skjulte jobbvisningen, blant annet stillinger hos Hadsel kommune, Nordlandssykehuset, Coop Nordland og Boreal.
 - Jobbsiden forble et utkast, og toppmenyen/offentlig forside ble ikke endret.
+
+## 2026-09-06 – offentlig jobbside og Lokalportalen Core 0.9.2
+
+- Publiserte siden `/ledige-stillinger-i-hadsel` med innledning og en visning som bare henter publiserte, aktive og ikke-utløpte stillinger.
+- La `Jobb` inn som tredje punkt i hovedmenyen.
+- Oppgraderte produksjonspluginen til 0.9.2.
+- La til sikker statussynkronisering når en jobbkilde bytter mellom godkjenning og automatisk publisering.
+- Aktiverte automatisk publisering for NAV og de to Nordlaks-kildene. Den separate Webcruiter-kilden for Nordlandssykehuset står i godkjenningsmodus for å unngå dubletter med NAV.
+- Offentlig, utlogget kontroll viste 24 jobbkort, fungerende menypunkt og ingen utløpte søknadsfrister.
+- Kontrollerte at `visitstokmarknes.no` ikke forekommer på jobbsiden.

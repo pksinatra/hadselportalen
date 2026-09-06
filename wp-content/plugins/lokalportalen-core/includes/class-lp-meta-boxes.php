@@ -166,6 +166,7 @@ final class LP_Meta_Boxes
         if ($post->post_type === 'lp_source') {
             $mode = isset($incoming['_lp_publish_mode']) && $incoming['_lp_publish_mode'] === 'publish' ? 'publish' : 'draft';
             update_post_meta($post_id, '_lp_publish_mode', $mode);
+            self::sync_source_jobs_status($post_id, $mode);
             $source_type = isset($incoming['_lp_source_type']) && in_array($incoming['_lp_source_type'], array('dx_culture', 'teamtailor_jobs', 'webcruiter_jobs', 'nav_jobs'), true) ? $incoming['_lp_source_type'] : 'rss';
             update_post_meta($post_id, '_lp_source_type', $source_type);
             update_post_meta($post_id, '_lp_source_active', isset($incoming['_lp_source_active']) ? '1' : '0');
@@ -174,6 +175,33 @@ final class LP_Meta_Boxes
             }
             update_post_meta($post_id, '_lp_max_items', (string) min(100, max(1, absint($incoming['_lp_max_items'] ?? 20))));
             update_post_meta($post_id, '_lp_max_age_days', (string) min(365, max(0, absint($incoming['_lp_max_age_days'] ?? 30))));
+        }
+    }
+
+    private static function sync_source_jobs_status(int $source_id, string $mode): void
+    {
+        $meta_query = array(
+            array('key' => '_lp_source_id', 'value' => $source_id, 'compare' => '='),
+            array('key' => '_lp_removed_at', 'compare' => 'NOT EXISTS'),
+        );
+        if ($mode === 'publish') {
+            $today = current_time('Y-m-d');
+            $meta_query[] = array(
+                'relation' => 'OR',
+                array('key' => '_lp_application_deadline', 'value' => $today, 'compare' => '>=', 'type' => 'DATE'),
+                array('key' => '_lp_application_deadline', 'value' => '', 'compare' => '='),
+                array('key' => '_lp_application_deadline', 'compare' => 'NOT EXISTS'),
+            );
+        }
+        $job_ids = get_posts(array(
+            'post_type' => 'lp_job',
+            'post_status' => array('publish', 'draft'),
+            'posts_per_page' => -1,
+            'fields' => 'ids',
+            'meta_query' => $meta_query,
+        ));
+        foreach ($job_ids as $job_id) {
+            wp_update_post(array('ID' => (int) $job_id, 'post_status' => $mode));
         }
     }
 }
