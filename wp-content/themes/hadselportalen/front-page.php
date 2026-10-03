@@ -95,30 +95,31 @@ $themes = array(
     </section>
     <div class="hp-wrap hp-themes">
         <?php foreach ($themes as $theme) : ?>
-            <section class="hp-theme" id="<?php echo esc_attr($theme['id']); ?>">
-                <div class="hp-theme__head">
+            <details class="hp-theme" id="<?php echo esc_attr($theme['id']); ?>">
+                <summary class="hp-theme__head">
                     <div class="hp-theme__copy">
                         <h2><?php echo esc_html($theme['title']); ?></h2>
                         <p><?php echo esc_html($theme['intro']); ?></p>
+                        <span class="hp-theme__action" aria-hidden="true">Åpne kategorien</span>
                     </div>
                     <div class="hp-theme__visual">
                         <img src="<?php echo esc_url($asset($theme['image'])); ?>" alt="<?php echo esc_attr($theme['alt']); ?>" loading="lazy">
                     </div>
-                </div>
+                </summary>
                 <div class="hp-theme__items">
                     <?php foreach ($theme['items'] as $item) : ?>
-                        <details class="hp-detail">
-                            <summary><?php echo esc_html($item[0]); ?></summary>
+                        <article class="hp-detail">
+                            <h3><?php echo esc_html($item[0]); ?></h3>
                             <div class="hp-detail__body">
                                 <p><?php echo esc_html($item[1]); ?></p>
                                 <?php if (!empty($item[2])) : ?>
                                     <p><a href="<?php echo esc_url($item[2]); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html($item[3]); ?> →</a></p>
                                 <?php endif; ?>
                             </div>
-                        </details>
+                        </article>
                     <?php endforeach; ?>
                 </div>
-            </section>
+            </details>
         <?php endforeach; ?>
     </div>
 </main>

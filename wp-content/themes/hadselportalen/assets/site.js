@@ -8,3 +8,12 @@ document.addEventListener('DOMContentLoaded', () => {
     menu.classList.toggle('is-open', !open);
   });
 });
+
+function hpOpenHashedTheme() {
+  if (!window.location.hash) return;
+  const theme = document.querySelector(`${window.location.hash}.hp-theme`);
+  if (theme) theme.open = true;
+}
+
+window.addEventListener('hashchange', hpOpenHashedTheme);
+document.addEventListener('DOMContentLoaded', hpOpenHashedTheme);

@@ -3,7 +3,7 @@ Theme Name: HadselPortalen
 Theme URI: https://hadselportalen.no/
 Author: HadselPortalen
 Description: Lett, egenutviklet tema for HadselPortalen og Lokalportalen Core.
-Version: 1.0.2
+Version: 1.0.3
 Requires at least: 6.6
 Requires PHP: 8.1
 Text Domain: hadselportalen
@@ -55,20 +55,23 @@ img { max-width: 100%; height: auto; }
 
 .hp-themes { display: grid; gap: 30px; padding: 12px 0 72px; }
 .hp-theme { overflow: hidden; background: var(--hp-card); border: 1px solid var(--hp-line); border-radius: var(--hp-radius); box-shadow: var(--hp-shadow); }
-.hp-theme__head { display: grid; grid-template-columns: minmax(0, 1.18fr) minmax(300px, .82fr); min-height: 340px; }
+.hp-theme__head { display: grid; grid-template-columns: minmax(0, 1.18fr) minmax(300px, .82fr); min-height: 340px; cursor: pointer; list-style: none; }
+.hp-theme__head::-webkit-details-marker { display: none; }
+.hp-theme__head:focus-visible { outline: 3px solid var(--hp-gold); outline-offset: -3px; }
 .hp-theme:nth-child(even) .hp-theme__copy { order: 2; }
 .hp-theme:nth-child(even) .hp-theme__visual { order: 1; }
 .hp-theme__copy { align-self: center; padding: clamp(26px, 5vw, 58px); }
 .hp-theme__copy h2 { margin: 0; font-size: clamp(2rem, 4.6vw, 3.9rem); line-height: 1; letter-spacing: -.035em; }
 .hp-theme__copy p { max-width: 680px; color: var(--hp-muted); font-size: 1.08rem; }
+.hp-theme__action { display: inline-flex; align-items: center; gap: 9px; margin-top: 14px; color: var(--hp-green); font-weight: 850; }
+.hp-theme__action::after { content: "+"; display: grid; place-items: center; width: 28px; height: 28px; border: 1px solid var(--hp-line); border-radius: 50%; font-size: 1.25rem; }
+.hp-theme[open] .hp-theme__action { font-size: 0; }
+.hp-theme[open] .hp-theme__action::before { content: "Lukk kategorien"; font-size: 1rem; }
+.hp-theme[open] .hp-theme__action::after { content: "–"; font-size: 1.25rem; }
 .hp-theme__visual img { width: 100%; height: 100%; min-height: 340px; object-fit: cover; display: block; }
-.hp-theme__items { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 0 clamp(18px, 4vw, 42px) clamp(22px, 4vw, 42px); }
+.hp-theme__items { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 12px clamp(18px, 4vw, 42px) clamp(22px, 4vw, 42px); border-top: 1px solid var(--hp-line); }
 .hp-detail { border: 1px solid var(--hp-line); border-radius: 14px; background: #fbfcfa; }
-.hp-detail[open] { background: #fff; border-color: #abc4b8; }
-.hp-detail summary { cursor: pointer; list-style: none; padding: 18px 48px 18px 20px; font-weight: 850; position: relative; }
-.hp-detail summary::-webkit-details-marker { display: none; }
-.hp-detail summary::after { content: "+"; position: absolute; right: 18px; top: 14px; font-size: 1.45rem; color: var(--hp-green); }
-.hp-detail[open] summary::after { content: "–"; }
+.hp-detail h3 { margin: 0; padding: 18px 20px 8px; font-size: 1rem; }
 .hp-detail__body { padding: 0 20px 20px; color: #435159; }
 .hp-detail__body p { margin: 0 0 12px; }
 .hp-detail__body p:last-child { margin-bottom: 0; }

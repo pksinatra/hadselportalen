@@ -122,7 +122,7 @@ Den eldre `HadselPortalen RSS 0.2.0` forble aktiv og uendret.
 - Bygget forsiden rundt fem temaer: natur og aktivitet, kultur og mat, kysthistorie og arbeidsliv, små oppdagelser og nordlys.
 - Integrerte Vesterålen Vinfestival, Stokmarknes 250, Nordlaks og Hurtigrutemuseet i de relevante temasamlingene.
 - Brukte fem redaksjonseide bilder fra VisitStokmarknes-materialet; forsiden omtaler ikke innholdet som lånt.
-- Viser tittel, ingress og bilde først, mens utdypende innhold ligger i tilgjengelige kollapsbokser.
+- Viser hver hovedkategori som én kollaps: lukket vises bare tittel, ingress og bilde; åpnet vises alle innholdsboksene ferdig utfoldet.
 - Migrerte Markedsbyen-siden til en egen temamal og lot Lokalportalen Core fortsette å drive jobb- og portalinnhold.
 - Testet temaet i WordPress på desktop og mobil før aktivering.
 - Kontrollerte forsiden, jobb, næringsliv, Markedsbyen og Opplev Hadsel i produksjon etter aktivering; alle svarte med HTTP 200.
