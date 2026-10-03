@@ -85,3 +85,9 @@ Den eldre `HadselPortalen RSS 0.2.0` forble aktiv og uendret.
 - Oppdaterer også ingress, tittel og relevante metadata når en eksisterende Teamtailor-stilling importeres på nytt.
 - Kjørte begge Nordlaks-feedene på nytt uten importfeil.
 - Kontrollerte offentlig og utlogget at `Renholdsmedarbeider i moderne kantine` og `Vi søker en ny kokk` står på egne linjer med luft før brødteksten.
+
+## 2026-10-03 – Lokalportalen Core 0.9.6
+
+- Reparerer manglende avsnittsgrenser i eldre, allerede importerte jobbingresser ved visning.
+- Kontrollerte offentlig og utlogget at det er luft etter `Dette er Nord universitet` og etter `Velkommen til portalen for åpen søknad til AIV`.
+- Kontrollerte samtidig at norske søknadsfrister og tidligere bevarte avsnitt fortsatt vises riktig.

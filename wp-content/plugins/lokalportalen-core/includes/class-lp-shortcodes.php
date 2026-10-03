@@ -324,7 +324,7 @@ final class LP_Shortcodes
             echo '</div>';
             echo '<h3><a href="' . esc_url(get_permalink()) . '">' . esc_html(get_the_title()) . '</a></h3>';
             if (get_the_excerpt()) {
-                echo '<p>' . nl2br(esc_html(get_the_excerpt()), false) . '</p>';
+                echo '<p>' . nl2br(esc_html(self::normalize_excerpt_breaks(get_the_excerpt())), false) . '</p>';
             }
             if ($source_url) {
                 echo '<a class="lp-card__source" rel="noopener noreferrer" href="' . esc_url($source_url) . '">Les hos originalkilden <span aria-hidden="true">→</span></a>';
@@ -347,5 +347,13 @@ final class LP_Shortcodes
         $months = array(1 => 'jan.', 'feb.', 'mars', 'apr.', 'mai', 'juni', 'juli', 'aug.', 'sep.', 'okt.', 'nov.', 'des.');
         $formatted = wp_date('j', $timestamp) . '. ' . $months[(int) wp_date('n', $timestamp)] . ' ' . wp_date('Y', $timestamp);
         return $with_time ? $formatted . ' ' . wp_date('H:i', $timestamp) : $formatted;
+    }
+
+    private static function normalize_excerpt_breaks(string $excerpt): string
+    {
+        $sentence_starts = '(?:Er|Vil|Vi|Om|Etter|Hver|Dette|Hos|På|Som|Du|Når|Ønsker)';
+        $excerpt = preg_replace('/([.!?])(?=' . $sentence_starts . '\b)/u', "$1\n\n", $excerpt) ?? $excerpt;
+        $excerpt = preg_replace('/(?<=\p{L})(?=' . $sentence_starts . '\b)/u', "\n\n", $excerpt) ?? $excerpt;
+        return preg_replace('/\n{3,}/u', "\n\n", $excerpt) ?? $excerpt;
     }
 }
