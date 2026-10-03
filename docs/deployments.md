@@ -91,3 +91,11 @@ Den eldre `HadselPortalen RSS 0.2.0` forble aktiv og uendret.
 - Reparerer manglende avsnittsgrenser i eldre, allerede importerte jobbingresser ved visning.
 - Kontrollerte offentlig og utlogget at det er luft etter `Dette er Nord universitet` og etter `Velkommen til portalen for åpen søknad til AIV`.
 - Kontrollerte samtidig at norske søknadsfrister og tidligere bevarte avsnitt fortsatt vises riktig.
+
+## 2026-10-03 – offentlig katalog og samlet innholdsoversikt
+
+- Publiserte `/finn-i-hadsel` med innledning, fritekstsøk og filtre for type, sted og kategori.
+- La `Finn i Hadsel` inn som fjerde punkt i hovedmenyen.
+- Publiserte det kvalitetssikrede startutvalget: Nordlaks, Stokmarknes 250, Vesterålen Vinfestival, Hurtigrutemuseet og Storheia.
+- Publiserte `/hele-hadselportalen` som en samlet gjennomgangsside for praktiske meldinger, aktuelt, arrangementer, jobber, katalog, VisitStokmarknes-promo og lokale Facebook-grupper.
+- Kontrollerte begge sidene offentlig og utlogget. Katalogen viste fem oppføringer, oversikten viste 22 aktive kort, og `visitstokmarknes.no` forekom ikke.
