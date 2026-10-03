@@ -106,3 +106,12 @@ Den eldre `HadselPortalen RSS 0.2.0` forble aktiv og uendret.
 - Utvidet katalog-shortcoden med valgfrie attributter for seksjonstittel og innledning.
 - Fjernet `Finn i Hadsel` fra hovedmenyen og la den separate siden i WordPress-papirkurven, slik at den fortsatt kan gjenopprettes.
 - Kontrollerte offentlig og utlogget at forsiden viser alle fem kortene, at den gamle katalog-URL-en gir HTTP 404, og at menylenken er borte.
+
+## 2026-10-03 – Opplev Hadsel
+
+- Erstattet den smale Storheia-oppføringen med den norske temasiden `/experience/opplev-hadsel`.
+- Bearbeidet hele innholdsutvalget fra VisitStokmarknes Explore til HadselPortalen, med fem hovedtemaer og 28 underpunkter.
+- Brukte `Hadsel` for kommuneomfattende natur-, frilufts-, transport-, overnattings- og nordlystemaer, og beholdt `Stokmarknes` der omtalen gjelder konkrete steder eller lokalhistorie.
+- Beholdt tydelig kildehenvisning til `visitstokmarknes.com/explore/` og relevante eksterne aktører og bakgrunnskilder.
+- Oppdaterte forsiden til å vise kortet `Opplev Hadsel` med en norsk ingress.
+- Kontrollerte siden og forsiden offentlig og utlogget; alle fem hovedtemaer og 28 underoverskrifter var synlige, og `visitstokmarknes.no` forekom ikke.
