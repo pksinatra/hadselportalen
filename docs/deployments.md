@@ -115,3 +115,16 @@ Den eldre `HadselPortalen RSS 0.2.0` forble aktiv og uendret.
 - Beholdt tydelig kildehenvisning til `visitstokmarknes.com/explore/` og relevante eksterne aktører og bakgrunnskilder.
 - Oppdaterte forsiden til å vise kortet `Opplev Hadsel` med en norsk ingress.
 - Kontrollerte siden og forsiden offentlig og utlogget; alle fem hovedtemaer og 28 underoverskrifter var synlige, og `visitstokmarknes.no` forekom ikke.
+
+## 2026-10-03 – eget HadselPortalen-tema 1.0.2
+
+- Bygget og aktiverte et eget, lett WordPress-tema uten stor hero eller avhengighet til en sidebygger.
+- Bygget forsiden rundt fem temaer: natur og aktivitet, kultur og mat, kysthistorie og arbeidsliv, små oppdagelser og nordlys.
+- Integrerte Vesterålen Vinfestival, Stokmarknes 250, Nordlaks og Hurtigrutemuseet i de relevante temasamlingene.
+- Brukte fem redaksjonseide bilder fra VisitStokmarknes-materialet; forsiden omtaler ikke innholdet som lånt.
+- Viser tittel, ingress og bilde først, mens utdypende innhold ligger i tilgjengelige kollapsbokser.
+- Migrerte Markedsbyen-siden til en egen temamal og lot Lokalportalen Core fortsette å drive jobb- og portalinnhold.
+- Testet temaet i WordPress på desktop og mobil før aktivering.
+- Kontrollerte forsiden, jobb, næringsliv, Markedsbyen og Opplev Hadsel i produksjon etter aktivering; alle svarte med HTTP 200.
+- Deaktiverte Elementor og Falang for Elementor Lite uten å slette pluginfilene. HadselPortalen RSS og Lokalportalen Core forble aktive.
+- Kontrollerte at `visitstokmarknes.no` ikke forekommer i temaet.
