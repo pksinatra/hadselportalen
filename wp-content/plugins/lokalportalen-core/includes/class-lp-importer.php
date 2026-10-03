@@ -113,7 +113,7 @@ final class LP_Importer
         foreach ($items as $item) {
             $permalink = esc_url_raw((string) $item->get_permalink());
             $title = sanitize_text_field(wp_strip_all_tags((string) $item->get_title()));
-            $description = wp_trim_words(wp_strip_all_tags((string) ($item->get_description() ?: $item->get_content())), 45, '…');
+            $description = self::excerpt_from_html((string) ($item->get_description() ?: $item->get_content()));
             $timestamp = (int) ($item->get_date('U') ?: 0);
             if (!self::passes_filters($title . ' ' . $description, $timestamp, $include, $exclude, $max_age_days)) {
                 $result['filtered']++;
@@ -262,25 +262,38 @@ final class LP_Importer
                 continue;
             }
             $seen[] = $external_id;
+            $title = sanitize_text_field(wp_strip_all_tags((string) $item->get_title()));
+            $description = self::excerpt_from_html((string) ($item->get_description() ?: $item->get_content()));
+            $division = self::first_teamtailor_value($item, 'division');
+            $department = self::first_teamtailor_value($item, 'department');
+            $address = implode(', ', array_filter($locations));
+            $date = $item->get_date('Y-m-d H:i:s');
             $existing_id = self::find_existing_id('lp_job', $external_id, $permalink);
             if ($existing_id > 0) {
-                wp_update_post(array('ID' => $existing_id, 'post_status' => $status));
+                $post_data = array(
+                    'ID' => $existing_id,
+                    'post_status' => $status,
+                    'post_title' => $title ?: 'Ledig stilling',
+                    'post_excerpt' => $description,
+                    'post_content' => $description,
+                );
+                if ($date) {
+                    $post_data['post_date'] = $date;
+                }
+                wp_update_post($post_data);
                 update_post_meta($existing_id, '_lp_source_id', $source->ID);
                 update_post_meta($existing_id, '_lp_source_name', $source->post_title);
                 update_post_meta($existing_id, '_lp_source_url', $permalink);
+                update_post_meta($existing_id, '_lp_employer', $division ?: $source->post_title);
+                update_post_meta($existing_id, '_lp_department', $department);
+                update_post_meta($existing_id, '_lp_address', $address);
+                update_post_meta($existing_id, '_lp_imported_at', current_time('mysql', true));
                 if (get_post_meta($existing_id, '_lp_removed_at', true)) {
                     delete_post_meta($existing_id, '_lp_removed_at');
                 }
                 $result['skipped']++;
                 continue;
             }
-
-            $title = sanitize_text_field(wp_strip_all_tags((string) $item->get_title()));
-            $description = wp_trim_words(wp_strip_all_tags((string) ($item->get_description() ?: $item->get_content())), 45, '…');
-            $division = self::first_teamtailor_value($item, 'division');
-            $department = self::first_teamtailor_value($item, 'department');
-            $address = implode(', ', array_filter($locations));
-            $date = $item->get_date('Y-m-d H:i:s');
             $post_id = wp_insert_post(array(
                 'post_type' => 'lp_job',
                 'post_status' => $status,
@@ -384,7 +397,7 @@ final class LP_Importer
             }
             $seen[] = $external_id;
             $title = sanitize_text_field(wp_strip_all_tags((string) ($job['Heading'] ?? $job['HeadingNotOverruled'] ?? 'Ledig stilling')));
-            $description = wp_trim_words(wp_strip_all_tags((string) ($job['Presentation'] ?? '')), 45, '…');
+            $description = self::excerpt_from_html((string) ($job['Presentation'] ?? ''));
             $employer = sanitize_text_field((string) ($job['CompanyName'] ?? $source->post_title));
             $deadline = sanitize_text_field(substr((string) ($job['ApplicationDeadline'] ?? ''), 0, 10));
             $job_type = sanitize_text_field((string) ($job['JobType'] ?? ''));
@@ -553,7 +566,7 @@ final class LP_Importer
                 ))));
                 $employer_data = is_array($job['employer'] ?? null) ? $job['employer'] : array();
                 $title = sanitize_text_field(wp_strip_all_tags((string) ($job['title'] ?? $job['jobtitle'] ?? $entry['title'] ?? 'Ledig stilling')));
-                $description = wp_trim_words(wp_strip_all_tags((string) ($job['description'] ?? $item['content_text'] ?? '')), 45, '…');
+                $description = self::excerpt_from_html((string) ($job['description'] ?? $item['content_text'] ?? ''));
                 $permalink = esc_url_raw((string) ($job['applicationUrl'] ?? $job['sourceurl'] ?? $job['link'] ?? ''));
                 $employer = sanitize_text_field((string) ($employer_data['name'] ?? $entry['businessName'] ?? ''));
                 $employment_type = sanitize_text_field((string) ($job['engagementtype'] ?? ''));
@@ -628,6 +641,39 @@ final class LP_Importer
             wp_update_post(array('ID' => $job_id, 'post_status' => 'draft'));
             update_post_meta($job_id, '_lp_removed_at', current_time('mysql', true));
         }
+    }
+
+    private static function excerpt_from_html(string $html, int $max_words = 45): string
+    {
+        $html = html_entity_decode($html, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $html = preg_replace('/<(?:br\s*\/?|\/p|\/div|\/li|\/h[1-6])\s*>/iu', "\n", $html) ?? $html;
+        $plain = html_entity_decode(wp_strip_all_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $lines = preg_split('/\R+/u', $plain) ?: array($plain);
+        $excerpt = array();
+        $remaining = $max_words;
+        $truncated = false;
+
+        foreach ($lines as $line) {
+            $line = trim((string) preg_replace('/[\t ]+/u', ' ', $line));
+            if ($line === '') {
+                continue;
+            }
+            $words = preg_split('/\s+/u', $line) ?: array();
+            if (count($words) > $remaining) {
+                $excerpt[] = implode(' ', array_slice($words, 0, $remaining));
+                $truncated = true;
+                break;
+            }
+            $excerpt[] = implode(' ', $words);
+            $remaining -= count($words);
+            if ($remaining <= 0) {
+                $truncated = true;
+                break;
+            }
+        }
+
+        $text = implode("\n\n", $excerpt);
+        return $truncated && $text !== '' ? $text . '…' : $text;
     }
 
     private static function first_teamtailor_value($item, string $tag): string

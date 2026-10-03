@@ -296,16 +296,16 @@ final class LP_Shortcodes
                 echo '<span>' . esc_html($employer) . '</span>';
             }
             if ($post_type === 'lp_current') {
-                echo '<time datetime="' . esc_attr(get_the_date(DATE_W3C)) . '">' . esc_html(get_the_date('j. M Y')) . '</time>';
+                echo '<time datetime="' . esc_attr(get_the_date(DATE_W3C)) . '">' . esc_html(self::format_date_no(get_the_date('Y-m-d'))) . '</time>';
             }
             if ($start_at) {
-                echo '<span>' . esc_html(wp_date('j. M Y H:i', strtotime($start_at))) . '</span>';
+                echo '<span>' . esc_html(self::format_date_no($start_at, true)) . '</span>';
             }
             if ($post_type === 'lp_notice' && $expires_at) {
-                echo '<span>Gjelder til ' . esc_html(wp_date('j. M Y H:i', strtotime($expires_at))) . '</span>';
+                echo '<span>Gjelder til ' . esc_html(self::format_date_no($expires_at, true)) . '</span>';
             }
             if ($post_type === 'lp_job' && $deadline) {
-                echo '<span>Søknadsfrist ' . esc_html(wp_date('j. M Y', strtotime($deadline))) . '</span>';
+                echo '<span>Søknadsfrist ' . esc_html(self::format_date_no($deadline)) . '</span>';
             }
             if ($post_type === 'lp_job' && $employment_type) {
                 echo '<span>' . esc_html($employment_type) . '</span>';
@@ -324,7 +324,7 @@ final class LP_Shortcodes
             echo '</div>';
             echo '<h3><a href="' . esc_url(get_permalink()) . '">' . esc_html(get_the_title()) . '</a></h3>';
             if (get_the_excerpt()) {
-                echo '<p>' . esc_html(get_the_excerpt()) . '</p>';
+                echo '<p>' . nl2br(esc_html(get_the_excerpt()), false) . '</p>';
             }
             if ($source_url) {
                 echo '<a class="lp-card__source" rel="noopener noreferrer" href="' . esc_url($source_url) . '">Les hos originalkilden <span aria-hidden="true">→</span></a>';
@@ -336,5 +336,16 @@ final class LP_Shortcodes
         echo '</div>';
         wp_reset_postdata();
         return (string) ob_get_clean();
+    }
+
+    private static function format_date_no(string $date, bool $with_time = false): string
+    {
+        $timestamp = strtotime($date);
+        if (!$timestamp) {
+            return $date;
+        }
+        $months = array(1 => 'jan.', 'feb.', 'mars', 'apr.', 'mai', 'juni', 'juli', 'aug.', 'sep.', 'okt.', 'nov.', 'des.');
+        $formatted = wp_date('j', $timestamp) . '. ' . $months[(int) wp_date('n', $timestamp)] . ' ' . wp_date('Y', $timestamp);
+        return $with_time ? $formatted . ' ' . wp_date('H:i', $timestamp) : $formatted;
     }
 }

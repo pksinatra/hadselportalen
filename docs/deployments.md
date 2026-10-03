@@ -77,3 +77,11 @@ Den eldre `HadselPortalen RSS 0.2.0` forble aktiv og uendret.
 - Aktiverte automatisk publisering for NAV og de to Nordlaks-kildene. Den separate Webcruiter-kilden for Nordlandssykehuset står i godkjenningsmodus for å unngå dubletter med NAV.
 - Offentlig, utlogget kontroll viste 24 jobbkort, fungerende menypunkt og ingen utløpte søknadsfrister.
 - Kontrollerte at `visitstokmarknes.no` ikke forekommer på jobbsiden.
+
+## 2026-10-03 – Lokalportalen Core 0.9.5
+
+- Formaterte datoer i portalkort med norske månedsnavn, for eksempel `25. okt. 2026`.
+- Bevarer avsnitt og små undertitler fra HTML-baserte jobbfeeder i kortenes ingresser.
+- Oppdaterer også ingress, tittel og relevante metadata når en eksisterende Teamtailor-stilling importeres på nytt.
+- Kjørte begge Nordlaks-feedene på nytt uten importfeil.
+- Kontrollerte offentlig og utlogget at `Renholdsmedarbeider i moderne kantine` og `Vi søker en ny kokk` står på egne linjer med luft før brødteksten.
