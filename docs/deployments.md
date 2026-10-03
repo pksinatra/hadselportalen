@@ -128,3 +128,4 @@ Den eldre `HadselPortalen RSS 0.2.0` forble aktiv og uendret.
 - Kontrollerte forsiden, jobb, næringsliv, Markedsbyen og Opplev Hadsel i produksjon etter aktivering; alle svarte med HTTP 200.
 - Deaktiverte Elementor og Falang for Elementor Lite uten å slette pluginfilene. HadselPortalen RSS og Lokalportalen Core forble aktive.
 - Kontrollerte at `visitstokmarknes.no` ikke forekommer i temaet.
+- La Visit Stokmarknes inn i både kulturkategorien og kategorien for små oppdagelser, med lenker til `visitstokmarknes.com`.

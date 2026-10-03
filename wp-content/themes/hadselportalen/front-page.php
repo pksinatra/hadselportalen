@@ -25,6 +25,7 @@ $themes = array(
         'image' => 'local-culture.jpg',
         'alt' => 'Kultur og småbyliv i Hadsel',
         'items' => array(
+            array('Visit Stokmarknes', 'En lokal guide til havna, sentrum, mat, kultur og opplevelser på Stokmarknes – laget for både besøkende og fastboende.', 'https://visitstokmarknes.com/', 'Besøk Visit Stokmarknes'),
             array('Vesterålen Vinfestival', 'Vinfestivalen samler vininteresserte, produsenter og fagfolk til smakinger, måltider og gode møter på Stokmarknes.', 'https://www.vesteralenvinfestival.no/', 'Besøk Vesterålen Vinfestival'),
             array('Stokmarknes 250', 'Jubileumsprosjektet løfter historien, arrangementene og menneskene som har formet Stokmarknes som handelssted.', 'https://www.stokmarknes250.no/', 'Besøk Stokmarknes 250'),
             array('Hurtigrutens Hus', 'Kulturhuset rommer kino, bibliotek, kulturskole, arrangementer og møteplasser ved havna på Stokmarknes.', 'https://www.hurtigrutenshus.no/', 'Se programmet'),
@@ -57,6 +58,7 @@ $themes = array(
         'image' => 'hidden-gems.jpg',
         'alt' => 'Rolig kystlandskap og skjulte steder i Hadsel',
         'items' => array(
+            array('Oppdag Stokmarknes til fots', 'Visit Stokmarknes samler en kort byvandring og lokale tips som gjør det enkelt å utforske havna, sentrum og Hurtigrutehistorien på egen hånd.', 'https://visitstokmarknes.com/', 'Åpne Visit Stokmarknes'),
             array('Days and Nights', 'Kunstverket på Børøya er en del av Skulpturlandskap Nordland. De lyse og mørke husformene speiler kontrastene i det nordnorske lyset.'),
             array('Bruparken og bystranda', 'Sitteplasser, grillmuligheter, sjøutsikt og en liten bystrand nær brua på Stokmarknes.'),
             array('Uværshula', 'Et værvendt, lokalt skjulested der vind, sjø og kystlandskap kommer tett på.'),
