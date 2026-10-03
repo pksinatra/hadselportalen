@@ -128,7 +128,14 @@ final class LP_Shortcodes
 
     public static function directory(array $atts = array()): string
     {
-        $atts = shortcode_atts(array('antall' => 12, 'type' => '', 'kladder' => '0', 'filtre' => '1'), $atts, 'lokalportalen_finn');
+        $atts = shortcode_atts(array(
+            'antall' => 12,
+            'type' => '',
+            'kladder' => '0',
+            'filtre' => '1',
+            'tittel' => '',
+            'innledning' => '',
+        ), $atts, 'lokalportalen_finn');
         $type_labels = array(
             'lp_business' => 'Virksomheter',
             'lp_experience' => 'Opplevelser',
@@ -167,8 +174,10 @@ final class LP_Shortcodes
         if (count($tax_query) > 1) {
             $query_args['tax_query'] = $tax_query;
         }
+        $heading = $atts['tittel'] !== '' ? '<h2>' . esc_html((string) $atts['tittel']) . '</h2>' : '';
+        $intro = $atts['innledning'] !== '' ? '<p>' . esc_html((string) $atts['innledning']) . '</p>' : '';
         $filters = $atts['filtre'] === '1' ? self::directory_filters($type_labels, $selected_type, $selected_location, $selected_category, $search, $atts['type'] === '') : '';
-        return $filters . self::render_query(new WP_Query($query_args), 'lp-directory-list');
+        return $heading . $intro . $filters . self::render_query(new WP_Query($query_args), 'lp-directory-list');
     }
 
     public static function promo(array $atts = array()): string

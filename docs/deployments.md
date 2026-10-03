@@ -99,3 +99,10 @@ Den eldre `HadselPortalen RSS 0.2.0` forble aktiv og uendret.
 - Publiserte det kvalitetssikrede startutvalget: Nordlaks, Stokmarknes 250, Vesterålen Vinfestival, Hurtigrutemuseet og Storheia.
 - Publiserte `/hele-hadselportalen` som en samlet gjennomgangsside for praktiske meldinger, aktuelt, arrangementer, jobber, katalog, VisitStokmarknes-promo og lokale Facebook-grupper.
 - Kontrollerte begge sidene offentlig og utlogget. Katalogen viste fem oppføringer, oversikten viste 22 aktive kort, og `visitstokmarknes.no` forekom ikke.
+
+## 2026-10-03 – katalog flyttet til forsiden og Lokalportalen Core 0.9.7
+
+- Flyttet det foreløpige utvalget på fem katalogoppføringer til forsiden som seksjonen `Finn i Hadsel`.
+- Utvidet katalog-shortcoden med valgfrie attributter for seksjonstittel og innledning.
+- Fjernet `Finn i Hadsel` fra hovedmenyen og la den separate siden i WordPress-papirkurven, slik at den fortsatt kan gjenopprettes.
+- Kontrollerte offentlig og utlogget at forsiden viser alle fem kortene, at den gamle katalog-URL-en gir HTTP 404, og at menylenken er borte.
